@@ -1,0 +1,1407 @@
+{
+  "categories": [
+    {
+      "id": "fresh-produce",
+      "name": "Fresh Produce",
+      "tagline": "Farm-fresh fruits & vegetables",
+      "image": "https://loremflickr.com/600/600/fresh%2Cvegetables%2Cmarket?lock=11"
+    },
+    {
+      "id": "dairy-eggs",
+      "name": "Dairy & Eggs",
+      "tagline": "Milk, butter, cheese & eggs",
+      "image": "https://loremflickr.com/600/600/dairy%2Cmilk%2Ccheese?lock=12"
+    },
+    {
+      "id": "staples-grains",
+      "name": "Staples & Grains",
+      "tagline": "Rice, flour, pulses & sugar",
+      "image": "https://loremflickr.com/600/600/rice%2Cgrains%2Cpulses?lock=13"
+    },
+    {
+      "id": "frozen-foods",
+      "name": "Frozen Foods",
+      "tagline": "Ready-to-cook & frozen items",
+      "image": "https://loremflickr.com/600/600/frozen%2Cfood%2Cfries?lock=14"
+    },
+    {
+      "id": "beverages",
+      "name": "Beverages",
+      "tagline": "Juices, soft drinks & mixers",
+      "image": "https://loremflickr.com/600/600/beverages%2Cjuice%2Cdrinks?lock=15"
+    },
+    {
+      "id": "packaging",
+      "name": "Packaging",
+      "tagline": "Containers, cups & consumables",
+      "image": "https://loremflickr.com/600/600/packaging%2Cbox%2Ccup?lock=16"
+    }
+  ],
+  "products": [
+    {
+      "id": "fresh-tomatoes-101",
+      "name": "Fresh Tomatoes",
+      "slug": "fresh-tomatoes",
+      "category": "fresh-produce",
+      "unit": "10 kg",
+      "price": 240,
+      "mrp": 320,
+      "rating": 4.6,
+      "reviews": 412,
+      "badge": "Best Rate",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/tomato?lock=101",
+      "keyword": "tomato",
+      "description": "Premium quality fresh tomatoes sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "onions-102",
+      "name": "Onions",
+      "slug": "onions",
+      "category": "fresh-produce",
+      "unit": "10 kg",
+      "price": 280,
+      "mrp": 350,
+      "rating": 4.5,
+      "reviews": 388,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/onion?lock=102",
+      "keyword": "onion",
+      "description": "Premium quality onions sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "potatoes-103",
+      "name": "Potatoes",
+      "slug": "potatoes",
+      "category": "fresh-produce",
+      "unit": "10 kg",
+      "price": 220,
+      "mrp": 290,
+      "rating": 4.7,
+      "reviews": 526,
+      "badge": "Best Rate",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/potato?lock=103",
+      "keyword": "potato",
+      "description": "Premium quality potatoes sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "green-capsicum-104",
+      "name": "Green Capsicum",
+      "slug": "green-capsicum",
+      "category": "fresh-produce",
+      "unit": "5 kg",
+      "price": 320,
+      "mrp": 400,
+      "rating": 4.4,
+      "reviews": 211,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/capsicum%2Cpepper?lock=104",
+      "keyword": "capsicum,pepper",
+      "description": "Premium quality green capsicum sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "carrots-105",
+      "name": "Carrots",
+      "slug": "carrots",
+      "category": "fresh-produce",
+      "unit": "5 kg",
+      "price": 190,
+      "mrp": 250,
+      "rating": 4.6,
+      "reviews": 174,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/carrot?lock=105",
+      "keyword": "carrot",
+      "description": "Premium quality carrots sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "cauliflower-106",
+      "name": "Cauliflower",
+      "slug": "cauliflower",
+      "category": "fresh-produce",
+      "unit": "5 kg",
+      "price": 160,
+      "mrp": 210,
+      "rating": 4.3,
+      "reviews": 142,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/cauliflower?lock=106",
+      "keyword": "cauliflower",
+      "description": "Premium quality cauliflower sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "fresh-coriander-107",
+      "name": "Fresh Coriander",
+      "slug": "fresh-coriander",
+      "category": "fresh-produce",
+      "unit": "1 kg",
+      "price": 80,
+      "mrp": 120,
+      "rating": 4.5,
+      "reviews": 96,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/coriander%2Cherbs?lock=107",
+      "keyword": "coriander,herbs",
+      "description": "Premium quality fresh coriander sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "ginger-108",
+      "name": "Ginger",
+      "slug": "ginger",
+      "category": "fresh-produce",
+      "unit": "2 kg",
+      "price": 180,
+      "mrp": 240,
+      "rating": 4.6,
+      "reviews": 130,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/ginger?lock=108",
+      "keyword": "ginger",
+      "description": "Premium quality ginger sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "garlic-109",
+      "name": "Garlic",
+      "slug": "garlic",
+      "category": "fresh-produce",
+      "unit": "2 kg",
+      "price": 260,
+      "mrp": 320,
+      "rating": 4.7,
+      "reviews": 205,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/garlic?lock=109",
+      "keyword": "garlic",
+      "description": "Premium quality garlic sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "bananas-robusta-110",
+      "name": "Bananas (Robusta)",
+      "slug": "bananas-robusta",
+      "category": "fresh-produce",
+      "unit": "5 kg",
+      "price": 150,
+      "mrp": 200,
+      "rating": 4.5,
+      "reviews": 318,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/banana?lock=110",
+      "keyword": "banana",
+      "description": "Premium quality bananas (robusta) sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "lemons-111",
+      "name": "Lemons",
+      "slug": "lemons",
+      "category": "fresh-produce",
+      "unit": "3 kg",
+      "price": 170,
+      "mrp": 220,
+      "rating": 4.4,
+      "reviews": 88,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/lemon?lock=111",
+      "keyword": "lemon",
+      "description": "Premium quality lemons sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "baby-spinach-112",
+      "name": "Baby Spinach",
+      "slug": "baby-spinach",
+      "category": "fresh-produce",
+      "unit": "2 kg",
+      "price": 140,
+      "mrp": 190,
+      "rating": 4.6,
+      "reviews": 110,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/spinach%2Cleaves?lock=112",
+      "keyword": "spinach,leaves",
+      "description": "Premium quality baby spinach sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "amul-butter-113",
+      "name": "Amul Butter",
+      "slug": "amul-butter",
+      "category": "dairy-eggs",
+      "unit": "500 g",
+      "price": 265,
+      "mrp": 290,
+      "rating": 4.8,
+      "reviews": 642,
+      "badge": "Best Rate",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/butter?lock=113",
+      "keyword": "butter",
+      "description": "Premium quality amul butter sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "fresh-paneer-114",
+      "name": "Fresh Paneer",
+      "slug": "fresh-paneer",
+      "category": "dairy-eggs",
+      "unit": "1 kg",
+      "price": 320,
+      "mrp": 380,
+      "rating": 4.7,
+      "reviews": 521,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/paneer%2Ccottage%2Ccheese?lock=114",
+      "keyword": "paneer,cottage,cheese",
+      "description": "Premium quality fresh paneer sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "mozzarella-cheese-115",
+      "name": "Mozzarella Cheese",
+      "slug": "mozzarella-cheese",
+      "category": "dairy-eggs",
+      "unit": "1 kg",
+      "price": 480,
+      "mrp": 560,
+      "rating": 4.8,
+      "reviews": 489,
+      "badge": "Best Rate",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/mozzarella%2Ccheese?lock=115",
+      "keyword": "mozzarella,cheese",
+      "description": "Premium quality mozzarella cheese sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "cheese-slices-116",
+      "name": "Cheese Slices",
+      "slug": "cheese-slices",
+      "category": "dairy-eggs",
+      "unit": "750 g",
+      "price": 295,
+      "mrp": 340,
+      "rating": 4.6,
+      "reviews": 277,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/cheese%2Cslice?lock=116",
+      "keyword": "cheese,slice",
+      "description": "Premium quality cheese slices sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "full-cream-milk-117",
+      "name": "Full Cream Milk",
+      "slug": "full-cream-milk",
+      "category": "dairy-eggs",
+      "unit": "6 x 1 L",
+      "price": 360,
+      "mrp": 420,
+      "rating": 4.7,
+      "reviews": 398,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/milk?lock=117",
+      "keyword": "milk",
+      "description": "Premium quality full cream milk sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "fresh-curd-118",
+      "name": "Fresh Curd",
+      "slug": "fresh-curd",
+      "category": "dairy-eggs",
+      "unit": "5 kg",
+      "price": 280,
+      "mrp": 330,
+      "rating": 4.5,
+      "reviews": 184,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/curd%2Cyogurt?lock=118",
+      "keyword": "curd,yogurt",
+      "description": "Premium quality fresh curd sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "fresh-cream-119",
+      "name": "Fresh Cream",
+      "slug": "fresh-cream",
+      "category": "dairy-eggs",
+      "unit": "1 L",
+      "price": 210,
+      "mrp": 250,
+      "rating": 4.6,
+      "reviews": 156,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/cream?lock=119",
+      "keyword": "cream",
+      "description": "Premium quality fresh cream sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "pure-cow-ghee-120",
+      "name": "Pure Cow Ghee",
+      "slug": "pure-cow-ghee",
+      "category": "dairy-eggs",
+      "unit": "1 L",
+      "price": 560,
+      "mrp": 640,
+      "rating": 4.8,
+      "reviews": 412,
+      "badge": "Best Rate",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/ghee?lock=120",
+      "keyword": "ghee",
+      "description": "Premium quality pure cow ghee sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "farm-eggs-tray-121",
+      "name": "Farm Eggs (Tray)",
+      "slug": "farm-eggs-tray",
+      "category": "dairy-eggs",
+      "unit": "30 pcs",
+      "price": 195,
+      "mrp": 240,
+      "rating": 4.6,
+      "reviews": 503,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/eggs?lock=121",
+      "keyword": "eggs",
+      "description": "Premium quality farm eggs (tray) sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "condensed-milk-122",
+      "name": "Condensed Milk",
+      "slug": "condensed-milk",
+      "category": "dairy-eggs",
+      "unit": "1 kg",
+      "price": 175,
+      "mrp": 210,
+      "rating": 4.5,
+      "reviews": 132,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/condensed%2Cmilk?lock=122",
+      "keyword": "condensed,milk",
+      "description": "Premium quality condensed milk sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "basmati-rice-premium-123",
+      "name": "Basmati Rice (Premium)",
+      "slug": "basmati-rice-premium",
+      "category": "staples-grains",
+      "unit": "25 kg",
+      "price": 2450,
+      "mrp": 2900,
+      "rating": 4.8,
+      "reviews": 712,
+      "badge": "Best Rate",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/basmati%2Crice?lock=123",
+      "keyword": "basmati,rice",
+      "description": "Premium quality basmati rice (premium) sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "sona-masoori-rice-124",
+      "name": "Sona Masoori Rice",
+      "slug": "sona-masoori-rice",
+      "category": "staples-grains",
+      "unit": "25 kg",
+      "price": 1650,
+      "mrp": 1950,
+      "rating": 4.6,
+      "reviews": 388,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/rice?lock=124",
+      "keyword": "rice",
+      "description": "Premium quality sona masoori rice sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "whole-wheat-atta-125",
+      "name": "Whole Wheat Atta",
+      "slug": "whole-wheat-atta",
+      "category": "staples-grains",
+      "unit": "25 kg",
+      "price": 980,
+      "mrp": 1150,
+      "rating": 4.7,
+      "reviews": 421,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/wheat%2Cflour?lock=125",
+      "keyword": "wheat,flour",
+      "description": "Premium quality whole wheat atta sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "refined-flour-maida-126",
+      "name": "Refined Flour (Maida)",
+      "slug": "refined-flour-maida",
+      "category": "staples-grains",
+      "unit": "25 kg",
+      "price": 920,
+      "mrp": 1080,
+      "rating": 4.5,
+      "reviews": 198,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/flour?lock=126",
+      "keyword": "flour",
+      "description": "Premium quality refined flour (maida) sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "toor-dal-127",
+      "name": "Toor Dal",
+      "slug": "toor-dal",
+      "category": "staples-grains",
+      "unit": "10 kg",
+      "price": 1450,
+      "mrp": 1700,
+      "rating": 4.6,
+      "reviews": 254,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/lentils%2Cdal?lock=127",
+      "keyword": "lentils,dal",
+      "description": "Premium quality toor dal sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "chana-dal-128",
+      "name": "Chana Dal",
+      "slug": "chana-dal",
+      "category": "staples-grains",
+      "unit": "10 kg",
+      "price": 980,
+      "mrp": 1150,
+      "rating": 4.5,
+      "reviews": 176,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/chickpea%2Clentil?lock=128",
+      "keyword": "chickpea,lentil",
+      "description": "Premium quality chana dal sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "moong-dal-129",
+      "name": "Moong Dal",
+      "slug": "moong-dal",
+      "category": "staples-grains",
+      "unit": "10 kg",
+      "price": 1280,
+      "mrp": 1480,
+      "rating": 4.6,
+      "reviews": 142,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/mung%2Clentil?lock=129",
+      "keyword": "mung,lentil",
+      "description": "Premium quality moong dal sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "refined-sugar-130",
+      "name": "Refined Sugar",
+      "slug": "refined-sugar",
+      "category": "staples-grains",
+      "unit": "25 kg",
+      "price": 1050,
+      "mrp": 1250,
+      "rating": 4.7,
+      "reviews": 365,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/sugar?lock=130",
+      "keyword": "sugar",
+      "description": "Premium quality refined sugar sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "iodised-salt-131",
+      "name": "Iodised Salt",
+      "slug": "iodised-salt",
+      "category": "staples-grains",
+      "unit": "10 kg",
+      "price": 180,
+      "mrp": 240,
+      "rating": 4.5,
+      "reviews": 98,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/salt?lock=131",
+      "keyword": "salt",
+      "description": "Premium quality iodised salt sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "besan-gram-flour-132",
+      "name": "Besan (Gram Flour)",
+      "slug": "besan-gram-flour",
+      "category": "staples-grains",
+      "unit": "10 kg",
+      "price": 760,
+      "mrp": 900,
+      "rating": 4.6,
+      "reviews": 121,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/gram%2Cflour?lock=132",
+      "keyword": "gram,flour",
+      "description": "Premium quality besan (gram flour) sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "french-fries-133",
+      "name": "French Fries",
+      "slug": "french-fries",
+      "category": "frozen-foods",
+      "unit": "2.5 kg",
+      "price": 320,
+      "mrp": 390,
+      "rating": 4.7,
+      "reviews": 612,
+      "badge": "Best Rate",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/french%2Cfries?lock=133",
+      "keyword": "french,fries",
+      "description": "Premium quality french fries sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "chicken-nuggets-134",
+      "name": "Chicken Nuggets",
+      "slug": "chicken-nuggets",
+      "category": "frozen-foods",
+      "unit": "1 kg",
+      "price": 285,
+      "mrp": 340,
+      "rating": 4.6,
+      "reviews": 421,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/chicken%2Cnuggets?lock=134",
+      "keyword": "chicken,nuggets",
+      "description": "Premium quality chicken nuggets sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "green-peas-frozen-135",
+      "name": "Green Peas (Frozen)",
+      "slug": "green-peas-frozen",
+      "category": "frozen-foods",
+      "unit": "1 kg",
+      "price": 130,
+      "mrp": 170,
+      "rating": 4.5,
+      "reviews": 188,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/peas?lock=135",
+      "keyword": "peas",
+      "description": "Premium quality green peas (frozen) sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "sweet-corn-frozen-136",
+      "name": "Sweet Corn (Frozen)",
+      "slug": "sweet-corn-frozen",
+      "category": "frozen-foods",
+      "unit": "1 kg",
+      "price": 145,
+      "mrp": 185,
+      "rating": 4.6,
+      "reviews": 142,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/corn?lock=136",
+      "keyword": "corn",
+      "description": "Premium quality sweet corn (frozen) sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "veg-spring-rolls-137",
+      "name": "Veg Spring Rolls",
+      "slug": "veg-spring-rolls",
+      "category": "frozen-foods",
+      "unit": "1 kg",
+      "price": 260,
+      "mrp": 320,
+      "rating": 4.5,
+      "reviews": 167,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/spring%2Crolls?lock=137",
+      "keyword": "spring,rolls",
+      "description": "Premium quality veg spring rolls sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "chicken-sausages-138",
+      "name": "Chicken Sausages",
+      "slug": "chicken-sausages",
+      "category": "frozen-foods",
+      "unit": "1 kg",
+      "price": 310,
+      "mrp": 380,
+      "rating": 4.6,
+      "reviews": 233,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/sausage?lock=138",
+      "keyword": "sausage",
+      "description": "Premium quality chicken sausages sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "aloo-tikki-139",
+      "name": "Aloo Tikki",
+      "slug": "aloo-tikki",
+      "category": "frozen-foods",
+      "unit": "1 kg",
+      "price": 220,
+      "mrp": 280,
+      "rating": 4.5,
+      "reviews": 154,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/potato%2Cpatty?lock=139",
+      "keyword": "potato,patty",
+      "description": "Premium quality aloo tikki sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "frozen-paneer-tikka-140",
+      "name": "Frozen Paneer Tikka",
+      "slug": "frozen-paneer-tikka",
+      "category": "frozen-foods",
+      "unit": "1 kg",
+      "price": 360,
+      "mrp": 430,
+      "rating": 4.7,
+      "reviews": 198,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/paneer%2Ctikka?lock=140",
+      "keyword": "paneer,tikka",
+      "description": "Premium quality frozen paneer tikka sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "coca-cola-pack-141",
+      "name": "Coca-Cola (Pack)",
+      "slug": "coca-cola-pack",
+      "category": "beverages",
+      "unit": "24 x 300 ml",
+      "price": 480,
+      "mrp": 600,
+      "rating": 4.7,
+      "reviews": 521,
+      "badge": "Best Rate",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/cola%2Csoda?lock=141",
+      "keyword": "cola,soda",
+      "description": "Premium quality coca-cola (pack) sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "tropicana-orange-juice-142",
+      "name": "Tropicana Orange Juice",
+      "slug": "tropicana-orange-juice",
+      "category": "beverages",
+      "unit": "6 x 1 L",
+      "price": 540,
+      "mrp": 660,
+      "rating": 4.6,
+      "reviews": 287,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/orange%2Cjuice?lock=142",
+      "keyword": "orange,juice",
+      "description": "Premium quality tropicana orange juice sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "red-bull-energy-143",
+      "name": "Red Bull Energy",
+      "slug": "red-bull-energy",
+      "category": "beverages",
+      "unit": "24 cans",
+      "price": 2280,
+      "mrp": 2640,
+      "rating": 4.5,
+      "reviews": 142,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/energy%2Cdrink?lock=143",
+      "keyword": "energy,drink",
+      "description": "Premium quality red bull energy sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "bisleri-water-144",
+      "name": "Bisleri Water",
+      "slug": "bisleri-water",
+      "category": "beverages",
+      "unit": "12 x 1 L",
+      "price": 180,
+      "mrp": 240,
+      "rating": 4.6,
+      "reviews": 398,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/water%2Cbottle?lock=144",
+      "keyword": "water,bottle",
+      "description": "Premium quality bisleri water sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "tata-tea-premium-145",
+      "name": "Tata Tea Premium",
+      "slug": "tata-tea-premium",
+      "category": "beverages",
+      "unit": "5 kg",
+      "price": 1650,
+      "mrp": 1900,
+      "rating": 4.7,
+      "reviews": 211,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/tea?lock=145",
+      "keyword": "tea",
+      "description": "Premium quality tata tea premium sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "roasted-coffee-beans-146",
+      "name": "Roasted Coffee Beans",
+      "slug": "roasted-coffee-beans",
+      "category": "beverages",
+      "unit": "1 kg",
+      "price": 720,
+      "mrp": 850,
+      "rating": 4.8,
+      "reviews": 364,
+      "badge": "Best Rate",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/coffee%2Cbeans?lock=146",
+      "keyword": "coffee,beans",
+      "description": "Premium quality roasted coffee beans sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "mango-pulp-alphonso-147",
+      "name": "Mango Pulp (Alphonso)",
+      "slug": "mango-pulp-alphonso",
+      "category": "beverages",
+      "unit": "3.1 kg",
+      "price": 410,
+      "mrp": 490,
+      "rating": 4.6,
+      "reviews": 176,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/mango%2Cpulp?lock=147",
+      "keyword": "mango,pulp",
+      "description": "Premium quality mango pulp (alphonso) sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "lemonade-concentrate-148",
+      "name": "Lemonade Concentrate",
+      "slug": "lemonade-concentrate",
+      "category": "beverages",
+      "unit": "1 L",
+      "price": 240,
+      "mrp": 300,
+      "rating": 4.4,
+      "reviews": 88,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/lemonade%2Csyrup?lock=148",
+      "keyword": "lemonade,syrup",
+      "description": "Premium quality lemonade concentrate sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "aluminium-foil-containers-149",
+      "name": "Aluminium Foil Containers",
+      "slug": "aluminium-foil-containers",
+      "category": "packaging",
+      "unit": "500 pcs",
+      "price": 850,
+      "mrp": 1050,
+      "rating": 4.6,
+      "reviews": 312,
+      "badge": "Best Rate",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/aluminium%2Ccontainer?lock=149",
+      "keyword": "aluminium,container",
+      "description": "Premium quality aluminium foil containers sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "paper-cups-250-ml-150",
+      "name": "Paper Cups (250 ml)",
+      "slug": "paper-cups-250-ml",
+      "category": "packaging",
+      "unit": "1000 pcs",
+      "price": 620,
+      "mrp": 780,
+      "rating": 4.5,
+      "reviews": 244,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/paper%2Ccup?lock=150",
+      "keyword": "paper,cup",
+      "description": "Premium quality paper cups (250 ml) sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "kraft-food-boxes-151",
+      "name": "Kraft Food Boxes",
+      "slug": "kraft-food-boxes",
+      "category": "packaging",
+      "unit": "500 pcs",
+      "price": 1150,
+      "mrp": 1400,
+      "rating": 4.7,
+      "reviews": 198,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/kraft%2Cbox?lock=151",
+      "keyword": "kraft,box",
+      "description": "Premium quality kraft food boxes sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "plastic-containers-lid-152",
+      "name": "Plastic Containers (Lid)",
+      "slug": "plastic-containers-lid",
+      "category": "packaging",
+      "unit": "500 pcs",
+      "price": 980,
+      "mrp": 1200,
+      "rating": 4.5,
+      "reviews": 167,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/plastic%2Ccontainer?lock=152",
+      "keyword": "plastic,container",
+      "description": "Premium quality plastic containers (lid) sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "carry-bags-compostable-153",
+      "name": "Carry Bags (Compostable)",
+      "slug": "carry-bags-compostable",
+      "category": "packaging",
+      "unit": "1000 pcs",
+      "price": 540,
+      "mrp": 680,
+      "rating": 4.6,
+      "reviews": 142,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/paper%2Cbag?lock=153",
+      "keyword": "paper,bag",
+      "description": "Premium quality carry bags (compostable) sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "cling-film-roll-154",
+      "name": "Cling Film Roll",
+      "slug": "cling-film-roll",
+      "category": "packaging",
+      "unit": "6 rolls",
+      "price": 360,
+      "mrp": 450,
+      "rating": 4.4,
+      "reviews": 96,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/cling%2Cfilm?lock=154",
+      "keyword": "cling,film",
+      "description": "Premium quality cling film roll sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "paper-napkins-155",
+      "name": "Paper Napkins",
+      "slug": "paper-napkins",
+      "category": "packaging",
+      "unit": "5000 pcs",
+      "price": 480,
+      "mrp": 600,
+      "rating": 4.5,
+      "reviews": 121,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/napkin%2Ctissue?lock=155",
+      "keyword": "napkin,tissue",
+      "description": "Premium quality paper napkins sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "wooden-cutlery-set-156",
+      "name": "Wooden Cutlery Set",
+      "slug": "wooden-cutlery-set",
+      "category": "packaging",
+      "unit": "1000 pcs",
+      "price": 720,
+      "mrp": 900,
+      "rating": 4.6,
+      "reviews": 88,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/wooden%2Ccutlery?lock=156",
+      "keyword": "wooden,cutlery",
+      "description": "Premium quality wooden cutlery set sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    },
+    {
+      "id": "pizza-boxes-12-inch-157",
+      "name": "Pizza Boxes (12 inch)",
+      "slug": "pizza-boxes-12-inch",
+      "category": "packaging",
+      "unit": "100 pcs",
+      "price": 650,
+      "mrp": 800,
+      "rating": 4.7,
+      "reviews": 154,
+      "badge": "",
+      "inStock": true,
+      "image": "https://loremflickr.com/600/600/pizza%2Cbox?lock=157",
+      "keyword": "pizza,box",
+      "description": "Premium quality pizza boxes (12 inch) sourced from trusted farms and brands, quality-checked and delivered fresh to your business."
+    }
+  ],
+  "content": {
+    "hero": {
+      "subtitle": "Reliable supply, transparent pricing, quality assurance and faster deliveries for your business.",
+      "stats": [
+        {
+          "value": "500+",
+          "label": "Business Customers"
+        },
+        {
+          "value": "50+",
+          "label": "Cities Covered"
+        },
+        {
+          "value": "10,000+",
+          "label": "Orders Delivered"
+        },
+        {
+          "value": "99%",
+          "label": "On-Time Delivery"
+        }
+      ],
+      "titleHighlight": "Restaurants, Cafes & Hotels",
+      "eyebrow": "B2B Procurement, Simplified",
+      "titlePrefix": "Simplifying Procurement For"
+    },
+    "features": [
+      {
+        "icon": "shield",
+        "title": "Consistent Quality",
+        "text": "Sourced from trusted farms and top brands with strict quality checks."
+      },
+      {
+        "icon": "truck",
+        "title": "Reliable Deliveries",
+        "text": "On-time delivery, every time. Never run out of stock for your business."
+      },
+      {
+        "icon": "tag",
+        "title": "Transparent Pricing",
+        "text": "No hidden charges. Best prices with complete transparency."
+      },
+      {
+        "icon": "headset",
+        "title": "Dedicated Support",
+        "text": "Personal account managers and 24x7 support on WhatsApp & call."
+      }
+    ],
+    "steps": [
+      {
+        "icon": "sprout",
+        "title": "Sourcing",
+        "text": "From trusted farmers & brands"
+      },
+      {
+        "icon": "check",
+        "title": "Quality Check",
+        "text": "Multi-level quality inspection"
+      },
+      {
+        "icon": "warehouse",
+        "title": "Warehouse",
+        "text": "Hygienic storage & handling"
+      },
+      {
+        "icon": "package",
+        "title": "Packaging",
+        "text": "Safe & secure packaging"
+      },
+      {
+        "icon": "truck",
+        "title": "Delivery",
+        "text": "On-time delivery to your doorstep"
+      }
+    ],
+    "industries": [
+      {
+        "id": "restaurants",
+        "name": "Restaurants",
+        "image": "https://loremflickr.com/600/600/restaurant%2Ckitchen%2Cinterior?lock=21",
+        "points": [
+          "Consistent quality ingredients for delicious & safe food",
+          "Bulk pricing that improves your margins",
+          "Reliable supply that keeps your kitchen running",
+          "Wide range of products under one roof"
+        ]
+      },
+      {
+        "id": "cafes",
+        "name": "Cafes",
+        "image": "https://loremflickr.com/600/600/cafe%2Ccoffee%2Cinterior?lock=22",
+        "points": [
+          "Fresh dairy, coffee beans & bakery essentials",
+          "Premium beverages and mixers",
+          "Compostable packaging & consumables",
+          "Flexible order quantities"
+        ]
+      },
+      {
+        "id": "hotels",
+        "name": "Hotels",
+        "image": "https://loremflickr.com/600/600/hotel%2Cbuffet%2Ckitchen?lock=23",
+        "points": [
+          "Large-volume supply with reliable lead times",
+          "Imported & gourmet ingredients",
+          "Dedicated account management",
+          "Consolidated billing & GST invoices"
+        ]
+      },
+      {
+        "id": "cloud-kitchens",
+        "name": "Cloud Kitchens",
+        "image": "https://loremflickr.com/600/600/cloud%2Ckitchen%2Ccooking?lock=24",
+        "points": [
+          "Ready-to-cook frozen range for fast prep",
+          "Demand prediction & scheduled deliveries",
+          "Cost control with transparent pricing",
+          "Custom packaging for delivery brands"
+        ]
+      },
+      {
+        "id": "caterers",
+        "name": "Caterers",
+        "image": "https://loremflickr.com/600/600/catering%2Cbuffet%2Cevent?lock=25",
+        "points": [
+          "Bulk staples and produce for events",
+          "Last-mile reliability for time-bound orders",
+          "Wide SKU range in a single order",
+          "Best wholesale rates"
+        ]
+      }
+    ],
+    "comparison": {
+      "traditional": [
+        "Unreliable Deliveries",
+        "Opaque / Unstable Pricing",
+        "Limited Product Range",
+        "Less Quality Assurance",
+        "Manual Ordering",
+        "No Dedicated Support"
+      ],
+      "platform": [
+        "On-Time, Reliable Deliveries",
+        "Transparent & Stable Pricing",
+        "Wide Range Of Products",
+        "Strict Quality Checks",
+        "Easy Ordering (Web / WhatsApp)",
+        "Dedicated Account Manager"
+      ]
+    },
+    "stories": [
+      {
+        "id": 1,
+        "business": "The Daily Cafe",
+        "location": "Mumbai",
+        "quote": "Reduced our procurement cost by 12% with better quality and on-time delivery.",
+        "author": "Arjun Mehta",
+        "role": "Owner"
+      },
+      {
+        "id": 2,
+        "business": "Spice Garden Restaurant",
+        "location": "Delhi",
+        "quote": "Wide product range and consistent supply helps us focus on what matters most — our customers.",
+        "author": "Neha Kapoor",
+        "role": "Manager"
+      },
+      {
+        "id": 3,
+        "business": "CloudBite Cloud Kitchen",
+        "location": "Bangalore",
+        "quote": "Hyperpure helped us reduce wastage by 18% with better inventory planning.",
+        "author": "Rohan Shetty",
+        "role": "Founder"
+      },
+      {
+        "id": 4,
+        "business": "Coast Kitchen",
+        "location": "Goa",
+        "quote": "Fresh seafood and produce delivered every morning. Our chefs love the quality.",
+        "author": "Maria Fernandes",
+        "role": "Head Chef"
+      }
+    ],
+    "bigStats": [
+      {
+        "value": "500+",
+        "label": "Business Customers"
+      },
+      {
+        "value": "50+",
+        "label": "Cities Covered"
+      },
+      {
+        "value": "10,000+",
+        "label": "Orders Delivered"
+      },
+      {
+        "value": "100+",
+        "label": "Products Available"
+      }
+    ],
+    "trust": [
+      {
+        "name": "FSSAI",
+        "sub": "Lic No. 10021062000258"
+      },
+      {
+        "name": "ISO 22000",
+        "sub": "Certified"
+      },
+      {
+        "name": "HACCP",
+        "sub": "Certified"
+      },
+      {
+        "name": "Google",
+        "sub": "4.8 / 5"
+      },
+      {
+        "name": "Trustpilot",
+        "sub": "4.7 / 5"
+      }
+    ],
+    "marquee": [
+      "Farm-Fresh Produce",
+      "Wholesale Pricing",
+      "Next-Day Delivery",
+      "Quality Assured",
+      "1000+ Products",
+      "50+ Cities",
+      "Zero Stockouts"
+    ],
+    "faqs": [
+      {
+        "q": "What is the minimum order quantity?",
+        "a": "Our minimum order value is ₹1,000. Most products are available in wholesale pack sizes suited for businesses."
+      },
+      {
+        "q": "How long does delivery take?",
+        "a": "Most orders are delivered next-day. Express delivery is available in select cities within a few hours."
+      },
+      {
+        "q": "Do you deliver outside my city?",
+        "a": "We currently serve 50+ cities across India and are expanding rapidly. Enter your pincode at checkout to confirm serviceability."
+      },
+      {
+        "q": "What payment methods do you accept?",
+        "a": "We accept UPI, credit/debit cards, net banking, and offer credit terms for eligible businesses."
+      },
+      {
+        "q": "Can I return products if I am not satisfied?",
+        "a": "Yes. If a product does not meet our quality promise, raise a return within 24 hours for a full refund or replacement."
+      },
+      {
+        "q": "Do you offer credit terms for businesses?",
+        "a": "Eligible businesses can avail flexible credit periods. Talk to your account manager to set up credit."
+      }
+    ]
+  },
+  "leads": [
+    {
+      "id": "28d2fc2f-0c40-4bd4-b0c8-d2364573ffec",
+      "name": "Test Cafe",
+      "phone": "9876500000",
+      "business": "Test Cafe",
+      "type": "callback",
+      "message": "Need a quote",
+      "status": "new",
+      "createdAt": "2026-06-10T13:37:16.046Z"
+    }
+  ],
+  "orders": [
+    {
+      "id": "HPMQ8AXHUA",
+      "status": "placed",
+      "customer": {
+        "name": "Demo Restaurant",
+        "phone": "9876512345",
+        "business": "Demo Foods",
+        "address": "12 MG Road",
+        "city": "Mumbai",
+        "pincode": "400001"
+      },
+      "items": [
+        {
+          "id": "fresh-tomatoes-101",
+          "name": "Fresh Tomatoes",
+          "unit": "10 kg",
+          "image": "https://loremflickr.com/600/600/tomato?lock=101",
+          "price": 240,
+          "qty": 20,
+          "lineTotal": 4800
+        },
+        {
+          "id": "onions-102",
+          "name": "Onions",
+          "unit": "10 kg",
+          "image": "https://loremflickr.com/600/600/onion?lock=102",
+          "price": 280,
+          "qty": 15,
+          "lineTotal": 4200
+        }
+      ],
+      "itemCount": 35,
+      "total": 9000,
+      "notes": "",
+      "createdAt": "2026-06-10T16:47:19.186Z"
+    },
+    {
+      "id": "HPMQ89B7PT",
+      "status": "placed",
+      "customer": {
+        "name": "Demo Restaurant",
+        "phone": "9876512345",
+        "business": "Demo Foods",
+        "address": "12 MG Road",
+        "city": "Mumbai",
+        "pincode": "400001"
+      },
+      "items": [
+        {
+          "id": "fresh-tomatoes-101",
+          "name": "Fresh Tomatoes",
+          "unit": "10 kg",
+          "image": "https://loremflickr.com/600/600/tomato?lock=101",
+          "price": 240,
+          "qty": 20,
+          "lineTotal": 4800
+        },
+        {
+          "id": "onions-102",
+          "name": "Onions",
+          "unit": "10 kg",
+          "image": "https://loremflickr.com/600/600/onion?lock=102",
+          "price": 280,
+          "qty": 15,
+          "lineTotal": 4200
+        }
+      ],
+      "itemCount": 35,
+      "total": 9000,
+      "notes": "",
+      "createdAt": "2026-06-10T16:02:00.017Z"
+    },
+    {
+      "id": "HPMQ8742E5",
+      "status": "placed",
+      "customer": {
+        "name": "Demo Restaurant",
+        "phone": "9876512345",
+        "business": "Demo Foods",
+        "address": "12 MG Road",
+        "city": "Mumbai",
+        "pincode": "400001"
+      },
+      "items": [
+        {
+          "id": "fresh-tomatoes-101",
+          "name": "Fresh Tomatoes",
+          "unit": "10 kg",
+          "image": "https://loremflickr.com/600/600/tomato?lock=101",
+          "price": 240,
+          "qty": 20,
+          "lineTotal": 4800
+        },
+        {
+          "id": "onions-102",
+          "name": "Onions",
+          "unit": "10 kg",
+          "image": "https://loremflickr.com/600/600/onion?lock=102",
+          "price": 280,
+          "qty": 15,
+          "lineTotal": 4200
+        }
+      ],
+      "itemCount": 35,
+      "total": 9000,
+      "notes": "",
+      "createdAt": "2026-06-10T15:00:27.293Z"
+    },
+    {
+      "id": "HPMQ86Z80T",
+      "status": "placed",
+      "customer": {
+        "name": "Demo Restaurant",
+        "phone": "9876512345",
+        "business": "Demo Foods",
+        "address": "12 MG Road",
+        "city": "Mumbai",
+        "pincode": "400001"
+      },
+      "items": [
+        {
+          "id": "fresh-tomatoes-101",
+          "name": "Fresh Tomatoes",
+          "unit": "10 kg",
+          "image": "https://loremflickr.com/600/600/tomato?lock=101",
+          "price": 240,
+          "qty": 20,
+          "lineTotal": 4800
+        },
+        {
+          "id": "onions-102",
+          "name": "Onions",
+          "unit": "10 kg",
+          "image": "https://loremflickr.com/600/600/onion?lock=102",
+          "price": 280,
+          "qty": 15,
+          "lineTotal": 4200
+        }
+      ],
+      "itemCount": 35,
+      "total": 9000,
+      "notes": "",
+      "createdAt": "2026-06-10T14:56:41.309Z"
+    },
+    {
+      "id": "HPMQ86DKE8",
+      "status": "placed",
+      "customer": {
+        "name": "Demo Resto",
+        "phone": "9876512345",
+        "business": "Demo",
+        "address": "1 St",
+        "city": "Mumbai",
+        "pincode": "400001"
+      },
+      "items": [
+        {
+          "id": "coca-cola-pack-141",
+          "name": "Coca-Cola (Pack)",
+          "unit": "24 x 300 ml",
+          "image": "https://loremflickr.com/600/600/cola%2Csoda?lock=141",
+          "price": 480,
+          "qty": 20,
+          "lineTotal": 9600
+        },
+        {
+          "id": "tropicana-orange-juice-142",
+          "name": "Tropicana Orange Juice",
+          "unit": "6 x 1 L",
+          "image": "https://loremflickr.com/600/600/orange%2Cjuice?lock=142",
+          "price": 540,
+          "qty": 10,
+          "lineTotal": 5400
+        }
+      ],
+      "itemCount": 30,
+      "total": 15000,
+      "notes": "",
+      "createdAt": "2026-06-10T14:39:50.912Z"
+    }
+  ]
+}
