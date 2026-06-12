@@ -49,10 +49,19 @@ export const api = {
   getOrder: (id) => request(`/orders/${id}`),
   trackOrders: (body) => request('/orders/track', { method: 'POST', body }),
 
+  // reviews (public)
+  getReviews: (productId, params = {}) => request(`/products/${productId}/reviews${qs(params) ? `?${qs(params)}` : ''}`),
+  submitReview: (productId, body) => request(`/products/${productId}/reviews`, { method: 'POST', body }),
+
   // admin
   login: (creds) => request('/admin/login', { method: 'POST', body: creds }),
   overview: () => request('/admin/overview', { authed: true }),
   updateContent: (body) => request('/admin/content', { method: 'PUT', body, authed: true }),
+  // admin: reviews
+  adminReviews: (params = {}) => request(`/admin/reviews${qs(params) ? `?${qs(params)}` : ''}`, { authed: true }),
+  updateReview: (productId, reviewId, body) => request(`/admin/reviews/${productId}/${reviewId}`, { method: 'PUT', body, authed: true }),
+  deleteReview: (productId, reviewId) => request(`/admin/reviews/${productId}/${reviewId}`, { method: 'DELETE', authed: true }),
+
   leads: (params = {}) => request(`/admin/leads${qs(params) ? `?${qs(params)}` : ''}`, { authed: true }),
   updateLead: (id, body) => request(`/admin/leads/${id}`, { method: 'PUT', body, authed: true }),
   orders: (params = {}) => request(`/admin/orders${qs(params) ? `?${qs(params)}` : ''}`, { authed: true }),

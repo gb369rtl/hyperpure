@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import {
   Star, Plus, Minus, ShoppingCart, ArrowRight, ChevronRight, MessageCircle,
-  ShieldCheck, Truck, BadgeIndianRupee, Leaf,
+  ShieldCheck, Truck, BadgeIndianRupee, Leaf, ThumbsUp, Send,
 } from 'lucide-react';
 import { api } from '../lib/api.js';
 import SmartImage from '../components/SmartImage.jsx';
@@ -19,6 +19,27 @@ const trust = [
   { icon: Leaf, title: 'Farm Fresh', text: 'Sourced from trusted farms' },
 ];
 
+function StarRating({ value, onChange, size = 20 }) {
+  const [hovered, setHovered] = useState(0);
+  return (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <button
+          key={n}
+          type="button"
+          onClick={() => onChange(n)}
+          onMouseEnter={() => setHovered(n)}
+          onMouseLeave={() => setHovered(0)}
+          aria-label={`${n} star`}
+          className="text-amber-400 transition-transform hover:scale-110"
+        >
+          <Star size={size} fill={(hovered || value) >= n ? 'currentColor' : 'none'} />
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -27,6 +48,14 @@ export default function ProductDetail() {
   const [qty, setQtyLocal] = useState(1);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+
+  // Reviews state
+  const [reviews, setReviews] = useState([]);
+  const [reviewsTotal, setReviewsTotal] = useState(0);
+  const [reviewForm, setReviewForm] = useState({ name: '', rating: 0, text: '' });
+  const [reviewError, setReviewError] = useState('');
+  const [reviewSuccess, setReviewSuccess] = useState(false);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -41,6 +70,32 @@ export default function ProductDetail() {
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
   }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+    api.getReviews(id, { limit: 10 }).then((r) => {
+      setReviews(r.items || []);
+      setReviewsTotal(r.total || 0);
+    }).catch(() => {});
+  }, [id]);
+
+  const submitReview = async (e) => {
+    e.preventDefault();
+    setReviewError('');
+    if (!reviewForm.rating) return setReviewError('Please select a star rating.');
+    if (!reviewForm.name.trim()) return setReviewError('Please enter your name.');
+    if (reviewForm.text.trim().length < 10) return setReviewError('Review must be at least 10 characters.');
+    setReviewSubmitting(true);
+    try {
+      await api.submitReview(id, reviewForm);
+      setReviewSuccess(true);
+      setReviewForm({ name: '', rating: 0, text: '' });
+    } catch (err) {
+      setReviewError(err.message || 'Failed to submit review.');
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -79,7 +134,7 @@ export default function ProductDetail() {
     navigate('/checkout');
   };
   const waLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-    `Hi Hyperpure, I'm interested in ${product.name} (${product.unit}). Qty: ${qty}.`,
+    `Hi Samagra, I'm interested in ${product.name} (${product.unit}). Qty: ${qty}.`,
   )}`;
 
   return (
@@ -216,6 +271,91 @@ export default function ProductDetail() {
             </div>
           </div>
         )}
+
+        {/* reviews */}
+        <div className="mt-16 grid grid-cols-1 gap-8 lg:grid-cols-2">
+          {/* list */}
+          <div>
+            <h2 className="font-display text-xl font-extrabold md:text-2xl">
+              Customer Reviews
+              {reviewsTotal > 0 && <span className="ml-2 text-sm font-normal text-ink/50 dark:text-cream/50">({reviewsTotal})</span>}
+            </h2>
+            {reviews.length === 0 ? (
+              <div className="mt-6 flex flex-col items-center gap-3 rounded-2xl border border-ink/[0.07] py-10 text-center dark:border-cream/10">
+                <ThumbsUp size={32} className="text-ink/20 dark:text-cream/20" />
+                <p className="text-sm text-ink/50 dark:text-cream/50">No approved reviews yet. Be the first!</p>
+              </div>
+            ) : (
+              <div className="mt-6 space-y-4">
+                {reviews.map((r) => (
+                  <div key={r.id} className="rounded-2xl border border-ink/[0.07] p-4 dark:border-cream/10">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-bold">{r.name}</p>
+                        <div className="mt-0.5 flex gap-0.5 text-amber-400">
+                          {[1,2,3,4,5].map((n) => (
+                            <Star key={n} size={13} fill={r.rating >= n ? 'currentColor' : 'none'} />
+                          ))}
+                        </div>
+                      </div>
+                      <span className="shrink-0 text-xs text-ink/40 dark:text-cream/40">
+                        {new Date(r.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-sm leading-relaxed text-ink/70 dark:text-cream/70">{r.text}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* submit form */}
+          <div>
+            <h2 className="font-display text-xl font-extrabold md:text-2xl">Write a Review</h2>
+            {reviewSuccess ? (
+              <div className="mt-6 rounded-2xl border border-brand-200 bg-brand-50 p-6 text-center dark:border-brand-500/30 dark:bg-brand-500/10">
+                <p className="font-semibold text-brand-700 dark:text-brand-400">Thanks for your review!</p>
+                <p className="mt-1 text-sm text-brand-600/70 dark:text-brand-400/70">It will appear once approved by our team.</p>
+              </div>
+            ) : (
+              <form onSubmit={submitReview} className="mt-6 space-y-4 rounded-2xl border border-ink/[0.07] p-5 dark:border-cream/10">
+                <label className="block text-sm">
+                  <span className="font-semibold">Your rating <span className="text-red-500">*</span></span>
+                  <div className="mt-2">
+                    <StarRating value={reviewForm.rating} onChange={(v) => setReviewForm((f) => ({ ...f, rating: v }))} />
+                  </div>
+                </label>
+                <label className="block text-sm">
+                  <span className="font-semibold">Your name <span className="text-red-500">*</span></span>
+                  <input
+                    className="field mt-1"
+                    placeholder="e.g. Amit Sharma"
+                    value={reviewForm.name}
+                    onChange={(e) => setReviewForm((f) => ({ ...f, name: e.target.value }))}
+                    maxLength={80}
+                  />
+                </label>
+                <label className="block text-sm">
+                  <span className="font-semibold">Your review <span className="text-red-500">*</span></span>
+                  <textarea
+                    className="field mt-1"
+                    rows={4}
+                    placeholder="Share your experience with this product…"
+                    value={reviewForm.text}
+                    onChange={(e) => setReviewForm((f) => ({ ...f, text: e.target.value }))}
+                    maxLength={1000}
+                  />
+                  <span className="mt-0.5 block text-right text-xs text-ink/35 dark:text-cream/35">{reviewForm.text.length}/1000</span>
+                </label>
+                {reviewError && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-600 dark:bg-red-500/10 dark:text-red-400">{reviewError}</p>}
+                <button type="submit" disabled={reviewSubmitting} className="btn-primary w-full disabled:opacity-60">
+                  <Send size={16} /> {reviewSubmitting ? 'Submitting…' : 'Submit Review'}
+                </button>
+                <p className="text-center text-xs text-ink/40 dark:text-cream/40">Reviews are moderated before publishing.</p>
+              </form>
+            )}
+          </div>
+        </div>
       </div>
 
       <QuoteBar />

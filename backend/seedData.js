@@ -1,4 +1,4 @@
-// Seed content for the Hyperpure-style B2B grocery procurement platform.
+// Seed content for the Samagra B2B grocery procurement platform.
 // Product imagery is sourced from the internet (LoremFlickr keyword photos),
 // with the frontend providing a graceful fallback if any image fails to load.
 
@@ -25,6 +25,7 @@ const p = (name, category, unit, price, mrp, rating, reviews, keyword, badge = '
     image: img(keyword, LOCK),
     keyword,
     description: `Premium quality ${name.toLowerCase()} sourced from trusted farms and brands, quality-checked and delivered fresh to your business.`,
+    reviewsList: [],
   };
 };
 
@@ -149,7 +150,7 @@ export const content = {
   stories: [
     { id: 1, business: 'The Daily Cafe', location: 'Mumbai', quote: 'Reduced our procurement cost by 12% with better quality and on-time delivery.', author: 'Arjun Mehta', role: 'Owner' },
     { id: 2, business: 'Spice Garden Restaurant', location: 'Delhi', quote: 'Wide product range and consistent supply helps us focus on what matters most — our customers.', author: 'Neha Kapoor', role: 'Manager' },
-    { id: 3, business: 'CloudBite Cloud Kitchen', location: 'Bangalore', quote: 'Hyperpure helped us reduce wastage by 18% with better inventory planning.', author: 'Rohan Shetty', role: 'Founder' },
+    { id: 3, business: 'CloudBite Cloud Kitchen', location: 'Bangalore', quote: 'Samagra helped us reduce wastage by 18% with better inventory planning.', author: 'Rohan Shetty', role: 'Founder' },
     { id: 4, business: 'Coast Kitchen', location: 'Goa', quote: 'Fresh seafood and produce delivered every morning. Our chefs love the quality.', author: 'Maria Fernandes', role: 'Head Chef' },
   ],
   bigStats: [
@@ -174,6 +175,13 @@ export const content = {
     '50+ Cities',
     'Zero Stockouts',
   ],
+  cta: {
+    eyebrow: 'Ready when you are',
+    title: 'Upgrade your',
+    titleHighlight: 'procurement',
+    titleSuffix: 'today.',
+    subtitle: 'Join hundreds of restaurants, cafes and hotels that trust Samagra for fresher supply, better prices and on-time delivery.',
+  },
   faqs: [
     { q: 'What is the minimum order quantity?', a: 'Our minimum order value is ₹1,000. Most products are available in wholesale pack sizes suited for businesses.' },
     { q: 'How long does delivery take?', a: 'Most orders are delivered next-day. Express delivery is available in select cities within a few hours.' },

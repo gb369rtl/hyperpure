@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { IndianRupee, ShoppingBag, Package, Bell, Clock, ArrowRight } from 'lucide-react';
+import { IndianRupee, ShoppingBag, Package, Bell, Clock, ArrowRight, Star } from 'lucide-react';
 import { api, clearToken } from '../../lib/api.js';
 import { inr } from '../../lib/constants.js';
 
@@ -29,6 +29,7 @@ export default function Dashboard() {
     { label: 'Pending Orders', value: overview?.pendingOrders ?? '—', icon: Clock, color: 'bg-amber-50 text-amber-600 dark:bg-amber-500/15' },
     { label: 'Products', value: overview?.products ?? '—', icon: Package, color: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15' },
     { label: 'New Leads', value: overview?.newLeads ?? '—', icon: Bell, color: 'bg-red-50 text-red-600 dark:bg-red-500/15' },
+    { label: 'Pending Reviews', value: overview?.pendingReviews ?? '—', icon: Star, color: 'bg-amber-50 text-amber-600 dark:bg-amber-500/15', link: '/admin/reviews' },
   ];
 
   return (
@@ -36,17 +37,22 @@ export default function Dashboard() {
       <h1 className="font-display text-2xl font-extrabold">Dashboard</h1>
       <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Overview of your store activity.</p>
 
-      <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
+      <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
         {cards.map((c) => {
           const I = c.icon;
-          return (
-            <div key={c.label} className="card p-5">
+          const inner = (
+            <>
               <div className={`grid h-11 w-11 place-items-center rounded-xl ${c.color}`}>
                 <I size={22} />
               </div>
               <div className="mt-4 font-display text-2xl font-extrabold nums">{c.value}</div>
               <div className="text-sm text-gray-500 dark:text-gray-400">{c.label}</div>
-            </div>
+            </>
+          );
+          return c.link ? (
+            <Link key={c.label} to={c.link} className="card p-5 hover:border-brand-300 dark:hover:border-brand-500/50 transition-colors">{inner}</Link>
+          ) : (
+            <div key={c.label} className="card p-5">{inner}</div>
           );
         })}
       </div>

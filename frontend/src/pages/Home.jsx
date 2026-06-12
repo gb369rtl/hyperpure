@@ -38,7 +38,7 @@ export default function Home() {
       <div className="grid min-h-screen place-items-center bg-cream dark:bg-ink">
         <div className="flex flex-col items-center gap-3 text-ink/40 dark:text-cream/40">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-ink/10 border-t-lime-500 dark:border-cream/10 dark:border-t-lime-400" />
-          <p className="text-sm">Loading Hyperpure…</p>
+          <p className="text-sm">Loading Samagra…</p>
         </div>
       </div>
     );
@@ -58,7 +58,7 @@ export default function Home() {
       <BigStats stats={content.bigStats} />
       <TrustedBy trust={content.trust} />
       <FAQ faqs={content.faqs} />
-      <CTA />
+      <CTA cta={content.cta} />
     </>
   );
 }

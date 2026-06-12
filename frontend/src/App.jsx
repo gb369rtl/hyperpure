@@ -21,6 +21,7 @@ const AdminOrders = lazy(() => import('./pages/admin/AdminOrders.jsx'));
 const AdminLeads = lazy(() => import('./pages/admin/AdminLeads.jsx'));
 const AdminCategories = lazy(() => import('./pages/admin/AdminCategories.jsx'));
 const AdminContent = lazy(() => import('./pages/admin/AdminContent.jsx'));
+const AdminReviews = lazy(() => import('./pages/admin/AdminReviews.jsx'));
 
 function Loader() {
   return (
@@ -87,6 +88,7 @@ export default function App() {
           <Route path="leads" element={<AdminLeads />} />
           <Route path="categories" element={<AdminCategories />} />
           <Route path="content" element={<AdminContent />} />
+          <Route path="reviews" element={<AdminReviews />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

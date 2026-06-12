@@ -162,7 +162,7 @@ export default function AdminContent() {
         <Section title="Why Switch (Comparison)" sectionKey="comparison" draft={draft} onSave={save}>
           <p className="mb-2 text-xs font-bold uppercase tracking-wide text-ink/40">Traditional suppliers</p>
           <StringList items={draft.comparison.traditional} onChange={(v) => setComparison('traditional', v)} placeholder="Drawback" />
-          <p className="mb-2 mt-4 text-xs font-bold uppercase tracking-wide text-ink/40">Hyperpure platform</p>
+          <p className="mb-2 mt-4 text-xs font-bold uppercase tracking-wide text-ink/40">Samagra platform</p>
           <StringList items={draft.comparison.platform} onChange={(v) => setComparison('platform', v)} placeholder="Advantage" />
         </Section>
 
@@ -182,6 +182,37 @@ export default function AdminContent() {
         <Section title="Trust Badges" sectionKey="trust" draft={draft} onSave={save}>
           <ObjectList items={draft.trust} template={{ name: '', sub: '' }} onChange={(v) => set('trust', v)}
             fields={[{ key: 'name', label: 'Name' }, { key: 'sub', label: 'Subtitle' }]} />
+        </Section>
+
+        {/* INDUSTRY SOLUTIONS */}
+        <Section title="Industry Solutions" desc="Tabs shown in the 'Solutions for your industry' section" sectionKey="industries" draft={draft} onSave={save}>
+          <ObjectList
+            items={draft.industries || []}
+            template={{ id: '', name: '', image: '', points: [] }}
+            onChange={(v) => set('industries', v)}
+            fields={[
+              { key: 'id', label: 'ID (slug, e.g. restaurants)' },
+              { key: 'name', label: 'Display Name' },
+              { key: 'image', label: 'Image URL', full: true },
+            ]}
+          />
+          <p className="mt-2 text-xs text-ink/40 dark:text-cream/40">Note: bullet points for each industry tab can be edited here by adding a "points" array field — or manage them directly via the JSON reset for now.</p>
+        </Section>
+
+        {/* CTA BANNER */}
+        <Section title="CTA Banner" desc="The dark call-to-action strip at the bottom of the home page" sectionKey="cta" draft={draft} onSave={save}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="block text-sm"><span className="font-semibold">Eyebrow</span>
+              <input className="field mt-1" value={draft.cta?.eyebrow || ''} onChange={(e) => set('cta', { ...draft.cta, eyebrow: e.target.value })} /></label>
+            <label className="block text-sm"><span className="font-semibold">Title prefix</span>
+              <input className="field mt-1" value={draft.cta?.title || ''} onChange={(e) => set('cta', { ...draft.cta, title: e.target.value })} /></label>
+            <label className="block text-sm"><span className="font-semibold">Highlighted word</span>
+              <input className="field mt-1" value={draft.cta?.titleHighlight || ''} onChange={(e) => set('cta', { ...draft.cta, titleHighlight: e.target.value })} /></label>
+            <label className="block text-sm"><span className="font-semibold">Title suffix</span>
+              <input className="field mt-1" value={draft.cta?.titleSuffix || ''} onChange={(e) => set('cta', { ...draft.cta, titleSuffix: e.target.value })} /></label>
+            <label className="block text-sm sm:col-span-2"><span className="font-semibold">Subtitle</span>
+              <textarea rows={2} className="field mt-1" value={draft.cta?.subtitle || ''} onChange={(e) => set('cta', { ...draft.cta, subtitle: e.target.value })} /></label>
+          </div>
         </Section>
 
         {/* FAQ */}

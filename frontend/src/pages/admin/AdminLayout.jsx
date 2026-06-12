@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate, Link } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingBag, Inbox, Layers, LayoutTemplate, LogOut, ExternalLink } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingBag, Inbox, Layers, LayoutTemplate, LogOut, ExternalLink, Star } from 'lucide-react';
 import { clearToken } from '../../lib/api.js';
 import Logo from '../../components/Logo.jsx';
 import ThemeToggle from '../../components/ThemeToggle.jsx';
@@ -11,6 +11,7 @@ const nav = [
   { to: '/admin/leads', label: 'Leads', icon: Inbox },
   { to: '/admin/categories', label: 'Categories', icon: Layers },
   { to: '/admin/content', label: 'Content', icon: LayoutTemplate },
+  { to: '/admin/reviews', label: 'Reviews', icon: Star },
 ];
 
 export default function AdminLayout() {
@@ -23,7 +24,7 @@ export default function AdminLayout() {
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-ink">
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-gray-100 bg-white dark:border-white/10 dark:bg-ink-800 md:flex">
-        <Link to="/" className="flex items-center border-b border-gray-100 px-6 py-5 dark:border-white/10" aria-label="Hyperpure home">
+        <Link to="/" className="flex items-center border-b border-gray-100 px-6 py-5 dark:border-white/10" aria-label="Samagra home">
           <Logo markSize={30} textClass="text-xl text-ink dark:text-cream" />
         </Link>
         <nav className="flex-1 space-y-1 p-4">
@@ -58,7 +59,7 @@ export default function AdminLayout() {
 
       <div className="flex-1">
         <header className="flex items-center justify-between border-b border-gray-100 bg-white px-4 py-3 dark:border-white/10 dark:bg-ink-800 md:hidden">
-          <span className="font-display font-extrabold">Hyperpure Admin</span>
+          <span className="font-display font-extrabold">Samagra Admin</span>
           <div className="flex items-center gap-1">
             <ThemeToggle />
             <button onClick={logout} className="text-red-500"><LogOut size={20} /></button>
