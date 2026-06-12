@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { IndianRupee, ShoppingBag, Package, Bell, Clock, ArrowRight, Star } from 'lucide-react';
-import { api, clearToken } from '../../lib/api.js';
+import { api } from '../../lib/api.js';
 import { inr } from '../../lib/constants.js';
 
 export default function Dashboard() {
@@ -18,7 +18,7 @@ export default function Dashboard() {
         setLeads(l.items || []);
       })
       .catch((e) => {
-        if (e.status === 401) { clearToken(); navigate('/admin/login'); }
+        if (e.status === 401) navigate('/login');
       });
   }, [navigate]);
 

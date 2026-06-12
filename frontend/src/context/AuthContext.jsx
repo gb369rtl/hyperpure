@@ -1,42 +1,32 @@
-import { createContext, useContext, useState, useCallback } from 'react';
-import { getToken, setToken as storeToken, clearToken } from '../lib/api.js';
-
-const KEY = 'sm_admin_user';
-
-function loadUser() {
-  try { return JSON.parse(localStorage.getItem(KEY)); } catch { return null; }
-}
+import { createContext, useCallback, useContext, useState } from 'react';
+import { getToken, setToken, clearToken } from '../lib/api.js';
 
 const AuthContext = createContext(null);
+const USER_KEY = 'sm_user';
+
+function loadUser() {
+  try { return JSON.parse(localStorage.getItem(USER_KEY)); } catch { return null; }
+}
 
 export function AuthProvider({ children }) {
   const [user, setUserState] = useState(loadUser);
 
-  const setUser = useCallback((userData) => {
-    if (userData) localStorage.setItem(KEY, JSON.stringify(userData));
-    else localStorage.removeItem(KEY);
-    setUserState(userData);
+  const setUser = useCallback((u) => {
+    if (u) localStorage.setItem(USER_KEY, JSON.stringify(u));
+    else localStorage.removeItem(USER_KEY);
+    setUserState(u);
   }, []);
 
-  const login = useCallback((token, userData) => {
-    storeToken(token);
-    setUser(userData);
-  }, [setUser]);
+  const login = useCallback((token, userData) => { setToken(token); setUser(userData); }, [setUser]);
+  const logout = useCallback(() => { clearToken(); setUser(null); }, [setUser]);
+  const refreshUser = useCallback((u) => setUser(u), [setUser]);
 
-  const logout = useCallback(() => {
-    clearToken();
-    setUser(null);
-  }, [setUser]);
-
-  const can = useCallback((permission) => {
-    return (user?.permissions || []).includes(permission);
-  }, [user]);
-
-  // Refresh user from latest login response (e.g. after /me call)
-  const refreshUser = useCallback((userData) => setUser(userData), [setUser]);
+  const isLoggedIn = Boolean(user && getToken());
+  const isAdmin = Boolean(user && (user.permissions || []).length > 0);
+  const can = useCallback((permission) => (user?.permissions || []).includes(permission), [user]);
 
   return (
-    <AuthContext.Provider value={{ user, can, login, logout, refreshUser, isLoggedIn: !!getToken() }}>
+    <AuthContext.Provider value={{ user, isLoggedIn, isAdmin, can, login, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

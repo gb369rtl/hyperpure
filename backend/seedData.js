@@ -111,6 +111,7 @@ export const products = [
 
 export const content = {
   hero: {
+    mainImage: '',
     eyebrow: 'B2B Procurement, Simplified',
     titlePrefix: 'Simplifying Procurement For',
     titleHighlight: 'Restaurants, Cafes & Hotels',
@@ -192,6 +193,25 @@ export const content = {
   ],
 };
 
+export const defaultSettings = {
+  whatsapp: '919999999999',
+  contact: {
+    phone: '+91 98765 43210',
+    email: 'hello@samagra.com',
+    address: 'Mumbai, Maharashtra, India',
+  },
+  social: {
+    facebook: '',
+    instagram: '',
+    linkedin: '',
+    twitter: '',
+  },
+  legal: {
+    privacyUrl: '',
+    termsUrl: '',
+  },
+};
+
 export const ALL_PERMISSIONS = [
   'dashboard:view',
   'products:read',   'products:write',   'products:delete',
@@ -230,6 +250,14 @@ export const defaultRoles = [
     createdAt: new Date(0).toISOString(),
   },
   {
+    id: 'customer',
+    name: 'Customer',
+    description: 'Registered public user — can browse, add to cart and place orders',
+    permissions: [],
+    isSystem: true,
+    createdAt: new Date(0).toISOString(),
+  },
+  {
     id: 'content-editor',
     name: 'Content Editor',
     description: 'Edit website content and categories',
@@ -249,6 +277,7 @@ export function seed() {
     categories,
     products,
     content,
+    settings: defaultSettings,
     leads: [],
     orders: [],
     users: [],

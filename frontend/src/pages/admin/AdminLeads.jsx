@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Phone, Building2, Search } from 'lucide-react';
-import { api, clearToken } from '../../lib/api.js';
+import { api } from '../../lib/api.js';
 import Pagination from '../../components/Pagination.jsx';
 
 const STATUSES = ['new', 'contacted', 'closed'];
@@ -31,7 +31,7 @@ export default function AdminLeads() {
     api
       .leads({ page, limit: 10, search, status })
       .then(setData)
-      .catch((e) => { if (e.status === 401) { clearToken(); navigate('/admin/login'); } })
+      .catch((e) => { if (e.status === 401) navigate('/login'); })
       .finally(() => setLoading(false));
   };
   useEffect(load, [page, search, status]); // eslint-disable-line react-hooks/exhaustive-deps

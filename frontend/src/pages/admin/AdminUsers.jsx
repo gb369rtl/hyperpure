@@ -127,6 +127,7 @@ export default function AdminUsers() {
   const [modal, setModal] = useState(null); // null | { type: 'user'|'password', target?: user }
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState('');
 
   const load = () => {
     setLoading(true);
@@ -157,7 +158,16 @@ export default function AdminUsers() {
     catch (err) { setError(err.message); }
   };
 
-  const filtered = users.filter((u) => !search || u.username.toLowerCase().includes(search.toLowerCase()));
+  const filtered = users.filter((u) => {
+    if (roleFilter && u.roleId !== roleFilter) return false;
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return (
+      (u.username || '').toLowerCase().includes(q) ||
+      (u.name || '').toLowerCase().includes(q) ||
+      (u.email || '').toLowerCase().includes(q)
+    );
+  });
 
   return (
     <>
@@ -172,7 +182,7 @@ export default function AdminUsers() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="font-display text-2xl font-extrabold">Users</h1>
-            <p className="text-sm text-ink/55 dark:text-cream/55">{users.length} admin user{users.length !== 1 ? 's' : ''}</p>
+            <p className="text-sm text-ink/55 dark:text-cream/55">{users.length} user{users.length !== 1 ? 's' : ''}</p>
           </div>
           {can('users:write') && (
             <button onClick={() => setModal({ type: 'user' })} className="btn-primary">
@@ -181,7 +191,13 @@ export default function AdminUsers() {
           )}
         </div>
 
-        <input className="field mt-5" placeholder="Search by username…" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <div className="mt-5 flex flex-wrap gap-3">
+          <input className="field flex-1" placeholder="Search by name, email or username…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <select className="field w-44 shrink-0" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
+            <option value="">All roles</option>
+            {roles.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+          </select>
+        </div>
 
         {error && <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 dark:bg-red-500/10 dark:text-red-400">{error}</p>}
 
@@ -195,8 +211,9 @@ export default function AdminUsers() {
               <thead className="border-b border-ink/[0.07] bg-ink/[0.02] dark:border-cream/10 dark:bg-cream/[0.02]">
                 <tr>
                   <th className="px-5 py-3 text-left font-semibold text-ink/60 dark:text-cream/60">Username</th>
-                  <th className="hidden px-5 py-3 text-left font-semibold text-ink/60 dark:text-cream/60 sm:table-cell">Role</th>
-                  <th className="hidden px-5 py-3 text-left font-semibold text-ink/60 dark:text-cream/60 md:table-cell">Status</th>
+                  <th className="hidden px-5 py-3 text-left font-semibold text-ink/60 dark:text-cream/60 sm:table-cell">Name / Email</th>
+                  <th className="hidden px-5 py-3 text-left font-semibold text-ink/60 dark:text-cream/60 md:table-cell">Role</th>
+                  <th className="hidden px-5 py-3 text-left font-semibold text-ink/60 dark:text-cream/60 lg:table-cell">Status</th>
                   <th className="hidden px-5 py-3 text-left font-semibold text-ink/60 dark:text-cream/60 lg:table-cell">Created</th>
                   <th className="px-5 py-3 text-right" />
                 </tr>
@@ -211,11 +228,15 @@ export default function AdminUsers() {
                         {isSelf && <span className="ml-2 rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-600 dark:bg-brand-500/10 dark:text-brand-400">you</span>}
                       </td>
                       <td className="hidden px-5 py-3 sm:table-cell">
-                        <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold dark:bg-white/10">
+                        <div className="text-sm text-ink dark:text-cream">{u.name || '—'}</div>
+                        <div className="text-xs text-ink/50 dark:text-cream/50">{u.email || ''}</div>
+                      </td>
+                      <td className="hidden px-5 py-3 md:table-cell">
+                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${u.roleId === 'customer' ? 'bg-lime-100 text-lime-800 dark:bg-lime-500/15 dark:text-lime-400' : 'bg-gray-100 dark:bg-white/10'}`}>
                           {roleMap[u.roleId] || u.roleId}
                         </span>
                       </td>
-                      <td className="hidden px-5 py-3 md:table-cell">
+                      <td className="hidden px-5 py-3 lg:table-cell">
                         {u.active
                           ? <span className="flex items-center gap-1.5 text-green-600"><UserCheck size={14} /> Active</span>
                           : <span className="flex items-center gap-1.5 text-gray-400"><UserX size={14} /> Inactive</span>}

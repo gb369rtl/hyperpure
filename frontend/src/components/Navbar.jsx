@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, Menu, X, MessageCircle } from 'lucide-react';
+import { Search, ShoppingCart, Menu, X, MessageCircle, User, LogOut, LayoutDashboard, ChevronDown } from 'lucide-react';
 import { useQuote } from '../context/QuoteContext.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
+import { useSettings } from '../context/SettingsContext.jsx';
 import Logo from './Logo.jsx';
 import ThemeToggle from './ThemeToggle.jsx';
-import { WHATSAPP_LINK } from '../lib/constants.js';
 
 const links = [
   { label: 'Catalogue', to: '/catalogue' },
@@ -17,9 +18,19 @@ export default function Navbar() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { count } = useQuote();
+  const { user, isLoggedIn, isAdmin, logout } = useAuth();
+  const { waLink } = useSettings();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState('');
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => { if (userMenuRef.current && !userMenuRef.current.contains(e.target)) setUserMenuOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
@@ -81,11 +92,39 @@ export default function Navbar() {
             )}
           </Link>
 
-          <Link to="/admin/login" className="hidden rounded-full border border-ink/15 px-4 py-2 text-sm font-bold text-ink hover:border-ink dark:border-cream/20 dark:text-cream dark:hover:border-cream sm:inline-flex">
-            Login
-          </Link>
+          {isLoggedIn ? (
+            <div className="relative hidden sm:block" ref={userMenuRef}>
+              <button
+                onClick={() => setUserMenuOpen((o) => !o)}
+                className="flex items-center gap-2 rounded-full border border-ink/15 px-3 py-2 text-sm font-bold text-ink hover:border-ink dark:border-cream/20 dark:text-cream dark:hover:border-cream"
+              >
+                <User size={16} />
+                <span className="max-w-[100px] truncate">{user?.name || user?.username}</span>
+                <ChevronDown size={14} className={`transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {userMenuOpen && (
+                <div className="absolute right-0 top-full mt-2 w-48 rounded-2xl border border-ink/10 bg-white py-2 shadow-card dark:border-cream/15 dark:bg-ink-800">
+                  {isAdmin && (
+                    <Link to="/admin" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-ink hover:bg-ink/5 dark:text-cream dark:hover:bg-cream/5">
+                      <LayoutDashboard size={16} /> Admin Panel
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => { logout(); setUserMenuOpen(false); navigate('/'); }}
+                    className="flex w-full items-center gap-2 px-4 py-2.5 text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"
+                  >
+                    <LogOut size={16} /> Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link to="/login" className="hidden rounded-full border border-ink/15 px-4 py-2 text-sm font-bold text-ink hover:border-ink dark:border-cream/20 dark:text-cream dark:hover:border-cream sm:inline-flex">
+              Login
+            </Link>
+          )}
 
-          <a href={WHATSAPP_LINK} target="_blank" rel="noreferrer" className="hidden rounded-full bg-ink px-4 py-2 text-sm font-bold text-cream hover:bg-ink-700 dark:bg-lime-400 dark:text-ink dark:hover:bg-lime-300 md:inline-flex md:items-center md:gap-2">
+          <a href={waLink()} target="_blank" rel="noreferrer" className="hidden rounded-full bg-ink px-4 py-2 text-sm font-bold text-cream hover:bg-ink-700 dark:bg-lime-400 dark:text-ink dark:hover:bg-lime-300 md:inline-flex md:items-center md:gap-2">
             <MessageCircle size={15} /> WhatsApp
           </a>
 
@@ -108,8 +147,18 @@ export default function Navbar() {
               </Link>
             ))}
             <div className="mt-2 flex gap-2">
-              <Link to="/admin/login" onClick={() => setOpen(false)} className="btn-outline flex-1">Login</Link>
-              <a href={WHATSAPP_LINK} target="_blank" rel="noreferrer" className="btn-primary flex-1">WhatsApp</a>
+              {isLoggedIn ? (
+                <>
+                  {isAdmin && <Link to="/admin" onClick={() => setOpen(false)} className="btn-outline flex-1">Admin</Link>}
+                  <button onClick={() => { logout(); setOpen(false); navigate('/'); }} className="btn-outline flex-1 text-red-500">Logout</button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" onClick={() => setOpen(false)} className="btn-outline flex-1">Login</Link>
+                  <Link to="/register" onClick={() => setOpen(false)} className="btn-outline flex-1">Register</Link>
+                </>
+              )}
+              <a href={waLink()} target="_blank" rel="noreferrer" className="btn-primary flex-1">WhatsApp</a>
             </div>
           </div>
         </div>

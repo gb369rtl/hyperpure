@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Pencil, Trash2, Search, X } from 'lucide-react';
-import { api, clearToken } from '../../lib/api.js';
+import { api } from '../../lib/api.js';
 import { inr } from '../../lib/constants.js';
 import Pagination from '../../components/Pagination.jsx';
 
@@ -109,7 +109,7 @@ export default function AdminProducts() {
     api
       .getProducts({ page, limit: 12, search, category, sort: '' })
       .then(setData)
-      .catch((e) => { if (e.status === 401) { clearToken(); navigate('/admin/login'); } })
+      .catch((e) => { if (e.status === 401) navigate('/login'); })
       .finally(() => setLoading(false));
   };
 

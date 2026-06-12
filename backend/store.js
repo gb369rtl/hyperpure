@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { seed, content as seedContent, defaultRoles } from './seedData.js';
+import { seed, content as seedContent, defaultRoles, defaultSettings } from './seedData.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.join(__dirname, 'data');
@@ -29,6 +29,10 @@ export function read() {
   db.products ??= [];
   db.users ??= [];
   db.content = { ...seedContent, ...(db.content || {}) };
+  db.settings = { ...defaultSettings, ...(db.settings || {}) };
+  if (db.settings.contact) db.settings.contact = { ...defaultSettings.contact, ...db.settings.contact };
+  if (db.settings.social)  db.settings.social  = { ...defaultSettings.social,  ...db.settings.social  };
+  if (db.settings.legal)   db.settings.legal   = { ...defaultSettings.legal,   ...db.settings.legal   };
   // Merge default roles: keep any custom roles, but ensure system roles are always present.
   if (!db.roles || db.roles.length === 0) {
     db.roles = defaultRoles;
@@ -37,6 +41,9 @@ export function read() {
       if (!db.roles.find((r) => r.id === def.id)) db.roles.push(def);
     }
   }
+  // Super Admin always has all permissions (cannot be reduced)
+  const sa = db.roles.find((r) => r.id === 'super-admin');
+  if (sa) sa.permissions = [...new Set([...sa.permissions, ...defaultRoles.find(r => r.id === 'super-admin').permissions])];
   return db;
 }
 

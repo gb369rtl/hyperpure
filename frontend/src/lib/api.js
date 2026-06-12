@@ -1,6 +1,6 @@
 const BASE = import.meta.env.VITE_API_URL || '';
 
-const TOKEN_KEY = 'sm_admin_token';
+const TOKEN_KEY = 'sm_token';
 export const getToken = () => localStorage.getItem(TOKEN_KEY);
 export const setToken = (t) => localStorage.setItem(TOKEN_KEY, t);
 export const clearToken = () => localStorage.removeItem(TOKEN_KEY);
@@ -53,9 +53,14 @@ export const api = {
   getReviews: (productId, params = {}) => request(`/products/${productId}/reviews${qs(params) ? `?${qs(params)}` : ''}`),
   submitReview: (productId, body) => request(`/products/${productId}/reviews`, { method: 'POST', body }),
 
+  // auth (unified — works for all users)
+  register: (body) => request('/auth/register', { method: 'POST', body }),
+  login: (body) => request('/auth/login', { method: 'POST', body }),
+  getMe: () => request('/auth/me', { authed: true }),
+  // settings (public read)
+  getSettings: () => request('/settings'),
+  updateSettings: (body) => request('/admin/settings', { method: 'PUT', body, authed: true }),
   // admin
-  login: (creds) => request('/admin/login', { method: 'POST', body: creds }),
-  getMe: () => request('/admin/me', { authed: true }),
   overview: () => request('/admin/overview', { authed: true }),
   updateContent: (body) => request('/admin/content', { method: 'PUT', body, authed: true }),
   // admin: roles

@@ -42,10 +42,13 @@ function verifyPassword(password, stored) {
 // ---------- bootstrap default super-admin from env vars ----------
 function ensureDefaultAdmin() {
   const db = read();
-  if (db.users.length > 0) return; // already set up
+  if (db.users.find((u) => u.username === ADMIN_USER && u.roleId === 'super-admin')) return;
   db.users.push({
     id: crypto.randomUUID(),
+    name: 'Super Admin',
     username: ADMIN_USER,
+    email: '',
+    phone: '',
     passwordHash: hashPassword(ADMIN_PASS),
     roleId: 'super-admin',
     active: true,
@@ -84,6 +87,14 @@ const auth = (req, res, next) => {
   } catch {
     res.status(401).json({ error: 'Invalid or expired token' });
   }
+};
+
+// Optional auth: attaches user if token present, doesn't fail if absent
+const optionalAuth = (req, res, next) => {
+  const header = req.headers.authorization || '';
+  const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+  if (token) { try { req.user = jwt.verify(token, JWT_SECRET); } catch { /* ignore */ } }
+  next();
 };
 
 // Middleware factory: require a specific permission
@@ -210,7 +221,7 @@ app.post('/api/leads', writeLimiter, (req, res) => {
 });
 
 // ---------- orders ----------
-app.post('/api/orders', writeLimiter, (req, res) => {
+app.post('/api/orders', writeLimiter, optionalAuth, (req, res) => {
   const { customer, items, notes } = req.body || {};
   const name  = sanitize(customer?.name, 100);
   const phone = sanitize(customer?.phone, 20);
@@ -240,6 +251,7 @@ app.post('/api/orders', writeLimiter, (req, res) => {
     itemCount: lineItems.reduce((s, i) => s + i.qty, 0),
     total,
     notes: sanitize(notes, 500),
+    userId: req.user?.userId || null,
     createdAt: new Date().toISOString(),
   };
   db.orders.unshift(order);
@@ -261,6 +273,83 @@ app.post('/api/orders/track', limiter, (req, res) => {
   if (id) orders = orders.filter((o) => o.id.toLowerCase() === id.toLowerCase());
   if (phone) orders = orders.filter((o) => o.customer.phone === phone);
   res.json(orders.slice(0, 20).map((o) => ({ id: o.id, status: o.status, createdAt: o.createdAt, total: o.total, itemCount: o.itemCount, customer: { name: o.customer.name, phone: o.customer.phone } })));
+});
+
+// ============================================================
+// PUBLIC SETTINGS
+// ============================================================
+app.get('/api/settings', (_req, res) => res.json(read().settings));
+
+// ============================================================
+// UNIFIED AUTH  (register / login / me)
+// ============================================================
+app.post('/api/auth/register', authLimiter, (req, res) => {
+  const name     = sanitize(req.body?.name, 100);
+  const email    = sanitize(req.body?.email, 200).toLowerCase();
+  const password = String(req.body?.password ?? '');
+  const phone    = sanitize(req.body?.phone, 20);
+
+  if (!name) return res.status(400).json({ error: 'Name is required' });
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+    return res.status(400).json({ error: 'Valid email is required' });
+  if (password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' });
+
+  const db = read();
+  if (db.users.find((u) => u.email?.toLowerCase() === email || u.username?.toLowerCase() === email))
+    return res.status(409).json({ error: 'An account with this email already exists' });
+
+  const user = {
+    id: crypto.randomUUID(),
+    name, username: email, email, phone,
+    passwordHash: hashPassword(password),
+    roleId: 'customer',
+    active: true,
+    createdAt: new Date().toISOString(),
+  };
+  db.users.push(user);
+  write(db);
+
+  const role = db.roles.find((r) => r.id === 'customer');
+  const permissions = role?.permissions || [];
+  const token = jwt.sign(
+    { userId: user.id, username: user.username, name: user.name, email: user.email, roleId: 'customer', roleName: 'Customer', permissions },
+    JWT_SECRET, { expiresIn: '30d' },
+  );
+  const { passwordHash: _h, ...safe } = user;
+  res.status(201).json({ token, user: { ...safe, roleName: 'Customer', permissions } });
+});
+
+app.post('/api/auth/login', authLimiter, (req, res) => {
+  const identifier = sanitize(req.body?.identifier || req.body?.username || req.body?.email || '', 200).toLowerCase();
+  const password   = String(req.body?.password ?? '');
+  if (!identifier || !password) return res.status(400).json({ error: 'Email/username and password are required' });
+
+  const db = read();
+  const user = db.users.find(
+    (u) => u.active !== false &&
+           (u.email?.toLowerCase() === identifier || u.username?.toLowerCase() === identifier),
+  );
+  if (!user || !verifyPassword(password, user.passwordHash))
+    return res.status(401).json({ error: 'Invalid credentials' });
+
+  const role = db.roles.find((r) => r.id === user.roleId);
+  const permissions = role?.permissions || [];
+  const expiresIn = user.roleId === 'customer' ? '30d' : '24h';
+  const token = jwt.sign(
+    { userId: user.id, username: user.username, name: user.name, email: user.email, roleId: user.roleId, roleName: role?.name || '', permissions },
+    JWT_SECRET, { expiresIn },
+  );
+  const { passwordHash: _h, ...safe } = user;
+  res.json({ token, user: { ...safe, roleName: role?.name || '', permissions } });
+});
+
+app.get('/api/auth/me', auth, (req, res) => {
+  const db = read();
+  const user = db.users.find((u) => u.id === req.user.userId);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  const role = db.roles.find((r) => r.id === user.roleId);
+  const { passwordHash: _h, ...safe } = user;
+  res.json({ ...safe, roleName: role?.name || '', permissions: role?.permissions || [] });
 });
 
 // ============================================================
@@ -666,6 +755,17 @@ app.put('/api/admin/content', ...can('content:write'), (req, res) => {
   }
   write(db);
   res.json(db.content);
+});
+
+app.put('/api/admin/settings', ...can('settings:manage'), (req, res) => {
+  const db = read();
+  const { whatsapp, contact, social, legal } = req.body || {};
+  if (whatsapp !== undefined) db.settings.whatsapp = sanitize(String(whatsapp), 30);
+  if (contact)  db.settings.contact = { phone: sanitize(contact.phone, 50), email: sanitize(contact.email, 200), address: sanitize(contact.address, 300) };
+  if (social)   db.settings.social  = { facebook: sanitize(social.facebook, 300), instagram: sanitize(social.instagram, 300), linkedin: sanitize(social.linkedin, 300), twitter: sanitize(social.twitter, 300) };
+  if (legal)    db.settings.legal   = { privacyUrl: sanitize(legal.privacyUrl, 300), termsUrl: sanitize(legal.termsUrl, 300) };
+  write(db);
+  res.json(db.settings);
 });
 
 app.post('/api/admin/reset', ...can('settings:manage'), (_req, res) => res.json({ ok: true, db: reset() }));

@@ -5,7 +5,7 @@ import Footer from './components/Footer.jsx';
 import WhatsAppFab from './components/WhatsAppFab.jsx';
 import ScrollManager from './components/ScrollManager.jsx';
 import Home from './pages/Home.jsx';
-import { getToken } from './lib/api.js';
+import { useAuth } from './context/AuthContext.jsx';
 
 // Route-level code splitting keeps the initial bundle small (perf at scale).
 const Catalogue = lazy(() => import('./pages/Catalogue.jsx'));
@@ -13,7 +13,6 @@ const ProductDetail = lazy(() => import('./pages/ProductDetail.jsx'));
 const Checkout = lazy(() => import('./pages/Checkout.jsx'));
 const OrderConfirmation = lazy(() => import('./pages/OrderConfirmation.jsx'));
 const TrackOrder = lazy(() => import('./pages/TrackOrder.jsx'));
-const AdminLogin = lazy(() => import('./pages/admin/AdminLogin.jsx'));
 const AdminLayout = lazy(() => import('./pages/admin/AdminLayout.jsx'));
 const Dashboard = lazy(() => import('./pages/admin/Dashboard.jsx'));
 const AdminProducts = lazy(() => import('./pages/admin/AdminProducts.jsx'));
@@ -24,6 +23,9 @@ const AdminContent = lazy(() => import('./pages/admin/AdminContent.jsx'));
 const AdminReviews = lazy(() => import('./pages/admin/AdminReviews.jsx'));
 const AdminUsers = lazy(() => import('./pages/admin/AdminUsers.jsx'));
 const AdminRoles = lazy(() => import('./pages/admin/AdminRoles.jsx'));
+const AdminSettings = lazy(() => import('./pages/admin/AdminSettings.jsx'));
+const Login = lazy(() => import('./pages/Login.jsx'));
+const Register = lazy(() => import('./pages/Register.jsx'));
 
 function Loader() {
   return (
@@ -48,8 +50,11 @@ function PublicLayout() {
   );
 }
 
-function RequireAuth({ children }) {
-  return getToken() ? children : <Navigate to="/admin/login" replace />;
+function RequireAdmin({ children }) {
+  const { isLoggedIn, isAdmin } = useAuth();
+  if (!isLoggedIn) return <Navigate to="/login" replace />;
+  if (!isAdmin) return <Navigate to="/" replace />;
+  return children;
 }
 
 export default function App() {
@@ -67,21 +72,33 @@ export default function App() {
         </Route>
 
         <Route
-          path="/admin/login"
+          path="/login"
           element={
             <Suspense fallback={<Loader />}>
-              <AdminLogin />
+              <Login />
             </Suspense>
           }
         />
         <Route
+          path="/register"
+          element={
+            <Suspense fallback={<Loader />}>
+              <Register />
+            </Suspense>
+          }
+        />
+
+        {/* Legacy admin login — redirect to unified login */}
+        <Route path="/admin/login" element={<Navigate to="/login" replace />} />
+
+        <Route
           path="/admin"
           element={
-            <RequireAuth>
+            <RequireAdmin>
               <Suspense fallback={<Loader />}>
                 <AdminLayout />
               </Suspense>
-            </RequireAuth>
+            </RequireAdmin>
           }
         >
           <Route index element={<Dashboard />} />
@@ -93,6 +110,7 @@ export default function App() {
           <Route path="reviews" element={<AdminReviews />} />
           <Route path="users" element={<AdminUsers />} />
           <Route path="roles" element={<AdminRoles />} />
+          <Route path="settings" element={<AdminSettings />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

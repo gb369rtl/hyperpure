@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, Link } from 'react-router-dom';
 import {
   LayoutDashboard, Package, ShoppingBag, Inbox, Layers,
-  LayoutTemplate, LogOut, ExternalLink, Star, Users, Shield,
+  LayoutTemplate, LogOut, ExternalLink, Star, Users, Shield, Settings,
 } from 'lucide-react';
 import { api } from '../../lib/api.js';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -19,6 +19,7 @@ const ALL_NAV = [
   { to: '/admin/reviews',    label: 'Reviews',   icon: Star,                        perm: 'reviews:read' },
   { to: '/admin/users',      label: 'Users',     icon: Users,                       perm: 'users:read' },
   { to: '/admin/roles',      label: 'Roles',     icon: Shield,                      perm: 'roles:read' },
+  { to: '/admin/settings',   label: 'Settings',  icon: Settings,                    perm: 'settings:manage' },
 ];
 
 export default function AdminLayout() {
@@ -27,13 +28,16 @@ export default function AdminLayout() {
 
   useEffect(() => {
     api.getMe()
-      .then(refreshUser)
-      .catch(() => { logout(); navigate('/admin/login'); });
+      .then((me) => {
+        refreshUser(me);
+        if (!(me.permissions || []).length) { logout(); navigate('/'); }
+      })
+      .catch(() => { logout(); navigate('/login'); });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const nav = ALL_NAV.filter((n) => can(n.perm));
 
-  const handleLogout = () => { logout(); navigate('/admin/login'); };
+  const handleLogout = () => { logout(); navigate('/login'); };
 
   const linkClass = ({ isActive }) =>
     `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors ${

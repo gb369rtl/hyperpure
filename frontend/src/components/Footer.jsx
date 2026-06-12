@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin, Twitter } from 'lucide-react';
 import Logo from './Logo.jsx';
-import { BRAND } from '../lib/constants.js';
+import { useSettings } from '../context/SettingsContext.jsx';
 
 const cols = [
   {
@@ -37,6 +37,16 @@ const cols = [
 ];
 
 export default function Footer() {
+  const { settings } = useSettings();
+  const social = settings.social || {};
+  const legal = settings.legal || {};
+  const contact = settings.contact || {};
+  const SOCIALS = [
+    { Icon: Facebook, key: 'facebook' },
+    { Icon: Instagram, key: 'instagram' },
+    { Icon: Linkedin, key: 'linkedin' },
+    { Icon: Twitter, key: 'twitter' },
+  ];
   return (
     <footer id="footer" className="bg-ink text-white/80">
       <div className="container-x grid grid-cols-2 gap-8 py-14 md:grid-cols-3 lg:grid-cols-5">
@@ -48,14 +58,18 @@ export default function Footer() {
             Simplifying procurement for businesses with quality, reliability and transparency.
           </p>
           <div className="mt-5 flex gap-2">
-            {[Facebook, Instagram, Linkedin, Twitter].map((I, i) => (
-              <a
-                key={i}
-                href="#"
-                className="grid h-9 w-9 place-items-center rounded-lg bg-white/10 hover:bg-lime-400 hover:text-ink"
-              >
-                <I size={16} />
-              </a>
+            {SOCIALS.map(({ Icon, key }) => (
+              social[key] ? (
+                <a
+                  key={key}
+                  href={social[key]}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="grid h-9 w-9 place-items-center rounded-lg bg-white/10 hover:bg-lime-400 hover:text-ink"
+                >
+                  <Icon size={16} />
+                </a>
+              ) : null
             ))}
           </div>
         </div>
@@ -79,13 +93,13 @@ export default function Footer() {
           <h4 className="font-display text-sm font-bold text-white">Contact Us</h4>
           <ul className="mt-4 space-y-2.5 text-sm text-white/60">
             <li className="flex items-center gap-2">
-              <Phone size={14} className="text-lime-400" /> {BRAND.phone}
+              <Phone size={14} className="text-lime-400" /> {contact.phone}
             </li>
             <li className="flex items-center gap-2">
-              <Mail size={14} className="text-lime-400" /> {BRAND.email}
+              <Mail size={14} className="text-lime-400" /> {contact.email}
             </li>
             <li className="flex items-center gap-2">
-              <MapPin size={14} className="text-lime-400" /> {BRAND.address}
+              <MapPin size={14} className="text-lime-400" /> {contact.address}
             </li>
           </ul>
         </div>
@@ -95,8 +109,12 @@ export default function Footer() {
         <div className="container-x flex flex-col items-center justify-between gap-3 py-5 text-xs text-white/50 sm:flex-row">
           <p>© {new Date().getFullYear()} Samagra. All rights reserved.</p>
           <div className="flex gap-5">
-            <a href="#" className="hover:text-white">Privacy Policy</a>
-            <a href="#" className="hover:text-white">Terms & Conditions</a>
+            {legal.privacyUrl
+              ? <a href={legal.privacyUrl} target="_blank" rel="noreferrer" className="hover:text-white">Privacy Policy</a>
+              : <span className="opacity-50">Privacy Policy</span>}
+            {legal.termsUrl
+              ? <a href={legal.termsUrl} target="_blank" rel="noreferrer" className="hover:text-white">Terms & Conditions</a>
+              : <span className="opacity-50">Terms & Conditions</span>}
           </div>
         </div>
       </div>

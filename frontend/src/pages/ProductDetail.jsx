@@ -10,7 +10,8 @@ import ProductCard from '../components/ProductCard.jsx';
 import QuoteBar from '../components/QuoteBar.jsx';
 import Reveal from '../components/Reveal.jsx';
 import { useQuote } from '../context/QuoteContext.jsx';
-import { inr, WHATSAPP_NUMBER } from '../lib/constants.js';
+import { inr } from '../lib/constants.js';
+import { useSettings as useSettingsCtx } from '../context/SettingsContext.jsx';
 
 const trust = [
   { icon: ShieldCheck, title: 'Quality Assured', text: 'Multi-level quality checks' },
@@ -44,6 +45,7 @@ export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { add, items, setQty } = useQuote();
+  const { settings } = useSettingsCtx();
   const [product, setProduct] = useState(null);
   const [qty, setQtyLocal] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -133,7 +135,7 @@ export default function ProductDetail() {
     addToQuote();
     navigate('/checkout');
   };
-  const waLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+  const waLink = `https://wa.me/${settings.whatsapp || '919999999999'}?text=${encodeURIComponent(
     `Hi Samagra, I'm interested in ${product.name} (${product.unit}). Qty: ${qty}.`,
   )}`;
 

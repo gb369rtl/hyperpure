@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, X, Trash2, MessageCircle, ArrowRight } from 'lucide-react';
 import { useQuote } from '../context/QuoteContext.jsx';
-import { inr, WHATSAPP_NUMBER } from '../lib/constants.js';
+import { inr } from '../lib/constants.js';
+import { useSettings } from '../context/SettingsContext.jsx';
 
 export default function QuoteBar() {
   const { items, count, total, setQty, remove, clear } = useQuote();
+  const { settings } = useSettings();
   const [open, setOpen] = useState(false);
 
   if (count === 0) return null;
@@ -13,7 +15,8 @@ export default function QuoteBar() {
   const waMessage = () => {
     const lines = items.map((i) => `• ${i.name} (${i.unit}) x ${i.qty} — ${inr(i.price * i.qty)}`);
     const text = `Hi Samagra, I'd like to order:\n${lines.join('\n')}\n\nTotal: ${inr(total)}`;
-    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
+    const num = settings.whatsapp || '919999999999';
+    return `https://wa.me/${num}?text=${encodeURIComponent(text)}`;
   };
 
   return (

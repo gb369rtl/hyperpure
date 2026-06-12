@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Trash2, Save, Check, ChevronDown } from 'lucide-react';
-import { api, clearToken } from '../../lib/api.js';
+import { api } from '../../lib/api.js';
 
 const ICONS = ['shield', 'truck', 'tag', 'headset', 'sprout', 'check', 'warehouse', 'package', 'star'];
 
@@ -114,7 +114,7 @@ export default function AdminContent() {
   const [draft, setDraft] = useState(null);
 
   useEffect(() => {
-    api.getContent().then(setDraft).catch((e) => { if (e.status === 401) { clearToken(); navigate('/admin/login'); } });
+    api.getContent().then(setDraft).catch((e) => { if (e.status === 401) navigate('/login'); });
   }, [navigate]);
 
   if (!draft) return <p className="py-10 text-center text-sm text-gray-400">Loading content…</p>;
@@ -141,6 +141,11 @@ export default function AdminContent() {
               <input className="field mt-1" value={draft.hero.titleHighlight || ''} onChange={(e) => setHero('titleHighlight', e.target.value)} /></label>
             <label className="block text-sm sm:col-span-2"><span className="font-semibold">Subtitle</span>
               <textarea rows={2} className="field mt-1" value={draft.hero.subtitle || ''} onChange={(e) => setHero('subtitle', e.target.value)} /></label>
+            <label className="block text-sm sm:col-span-2">
+              <span className="font-semibold">Main Image URL</span>
+              <span className="ml-2 text-xs text-ink/45 dark:text-cream/45">The large photo shown on the right side of the hero</span>
+              <input className="field mt-1" type="url" placeholder="https://…" value={draft.hero.mainImage || ''} onChange={(e) => setHero('mainImage', e.target.value)} />
+            </label>
           </div>
           <p className="mb-2 mt-4 text-xs font-bold uppercase tracking-wide text-ink/40">Stats strip</p>
           <ObjectList items={draft.hero.stats} template={{ value: '', label: '' }} onChange={(v) => setHero('stats', v)}

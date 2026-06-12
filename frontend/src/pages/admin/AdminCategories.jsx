@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Pencil, Trash2, X } from 'lucide-react';
-import { api, clearToken } from '../../lib/api.js';
+import { api } from '../../lib/api.js';
 
 function CategoryForm({ category, onClose, onSaved }) {
   const [form, setForm] = useState(category || { name: '', tagline: '', keyword: '', image: '' });
@@ -61,7 +61,7 @@ export default function AdminCategories() {
   const load = () => {
     setLoading(true);
     api.getCategories().then(setCategories)
-      .catch((e) => { if (e.status === 401) { clearToken(); navigate('/admin/login'); } })
+      .catch((e) => { if (e.status === 401) navigate('/login'); })
       .finally(() => setLoading(false));
   };
   useEffect(load, [navigate]); // eslint-disable-line react-hooks/exhaustive-deps

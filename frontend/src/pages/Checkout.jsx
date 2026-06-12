@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Trash2, Plus, Minus, ShieldCheck, ArrowRight } from 'lucide-react';
 import { useQuote } from '../context/QuoteContext.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
 import { api } from '../lib/api.js';
 import { inr } from '../lib/constants.js';
 
@@ -15,7 +16,15 @@ const PAYMENTS = [
 export default function Checkout() {
   const navigate = useNavigate();
   const { items, total, setQty, remove, clear } = useQuote();
-  const [form, setForm] = useState({ name: '', phone: '', business: '', address: '', city: '', pincode: '' });
+  const { isLoggedIn, user } = useAuth();
+  const [form, setForm] = useState({
+    name: user?.name || '',
+    phone: user?.phone || '',
+    business: '',
+    address: '',
+    city: '',
+    pincode: '',
+  });
   const [payment, setPayment] = useState('upi');
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -53,6 +62,11 @@ export default function Checkout() {
       setSubmitting(false);
     }
   };
+
+  if (!isLoggedIn) {
+    navigate('/login?next=/checkout', { replace: true });
+    return null;
+  }
 
   if (items.length === 0) {
     return (

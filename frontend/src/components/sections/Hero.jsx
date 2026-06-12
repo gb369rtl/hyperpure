@@ -3,10 +3,11 @@ import { motion } from 'framer-motion';
 import { ArrowUpRight, MessageCircle, Truck, Star, Leaf } from 'lucide-react';
 import SmartImage from '../SmartImage.jsx';
 import AnimatedCounter from '../AnimatedCounter.jsx';
-import { WHATSAPP_LINK } from '../../lib/constants.js';
+import { useSettings } from '../../context/SettingsContext.jsx';
 import { fadeUp, stagger, EASE } from '../../lib/motion.js';
 
 export default function Hero({ hero }) {
+  const { waLink } = useSettings();
   const stats = hero?.stats || [];
   const prefixWords = (hero?.titlePrefix || 'Simplifying Procurement For').split(' ');
 
@@ -73,7 +74,7 @@ export default function Hero({ hero }) {
             <Link to="/catalogue" className="btn-primary text-base">
               Explore Catalogue <ArrowUpRight size={18} />
             </Link>
-            <a href={WHATSAPP_LINK} target="_blank" rel="noreferrer" className="btn-outline text-base">
+            <a href={waLink()} target="_blank" rel="noreferrer" className="btn-outline text-base">
               <MessageCircle size={18} /> Order on WhatsApp
             </a>
           </motion.div>
@@ -113,7 +114,7 @@ export default function Hero({ hero }) {
 
           <div className="relative overflow-hidden rounded-[2.2rem] border border-ink/5 shadow-card dark:border-cream/5">
             <SmartImage
-              src="https://loremflickr.com/900/1100/vegetables,fresh,market"
+              src={hero?.mainImage || 'https://loremflickr.com/900/1100/vegetables,fresh,market'}
               keyword="vegetables,fresh"
               alt="Fresh produce supply"
               className="aspect-[4/5] w-full object-cover"

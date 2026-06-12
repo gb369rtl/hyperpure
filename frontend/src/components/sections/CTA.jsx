@@ -3,10 +3,11 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MessageCircle, PhoneCall, ArrowUpRight } from 'lucide-react';
 import CallbackModal from '../CallbackModal.jsx';
-import { WHATSAPP_LINK } from '../../lib/constants.js';
+import { useSettings } from '../../context/SettingsContext.jsx';
 import { EASE } from '../../lib/motion.js';
 
 export default function CTA({ cta = {} }) {
+  const { waLink } = useSettings();
   const [open, setOpen] = useState(false);
   const eyebrow = cta.eyebrow || 'Ready when you are';
   const title = cta.title || 'Upgrade your';
@@ -38,7 +39,7 @@ export default function CTA({ cta = {} }) {
               <Link to="/catalogue" className="btn-lime text-base">
                 Start Ordering <ArrowUpRight size={18} />
               </Link>
-              <a href={WHATSAPP_LINK} target="_blank" rel="noreferrer" className="btn-ghost-light text-base">
+              <a href={waLink()} target="_blank" rel="noreferrer" className="btn-ghost-light text-base">
                 <MessageCircle size={18} /> Talk on WhatsApp
               </a>
               <button onClick={() => setOpen(true)} className="btn-ghost-light text-base">

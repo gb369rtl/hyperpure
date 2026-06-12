@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, ChevronDown, Phone, MapPin } from 'lucide-react';
-import { api, clearToken } from '../../lib/api.js';
+import { api } from '../../lib/api.js';
 import { inr } from '../../lib/constants.js';
 import Pagination from '../../components/Pagination.jsx';
 
@@ -36,7 +36,7 @@ export default function AdminOrders() {
     api
       .orders({ page, limit: 10, search, status })
       .then(setData)
-      .catch((e) => { if (e.status === 401) { clearToken(); navigate('/admin/login'); } })
+      .catch((e) => { if (e.status === 401) navigate('/login'); })
       .finally(() => setLoading(false));
   };
   useEffect(load, [page, search, status]); // eslint-disable-line react-hooks/exhaustive-deps
