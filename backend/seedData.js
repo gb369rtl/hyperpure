@@ -192,6 +192,58 @@ export const content = {
   ],
 };
 
+export const ALL_PERMISSIONS = [
+  'dashboard:view',
+  'products:read',   'products:write',   'products:delete',
+  'categories:read', 'categories:write', 'categories:delete',
+  'orders:read',     'orders:write',
+  'leads:read',      'leads:write',
+  'reviews:read',    'reviews:write',    'reviews:delete',
+  'content:read',    'content:write',
+  'users:read',      'users:write',      'users:delete',
+  'roles:read',      'roles:write',      'roles:delete',
+  'settings:manage',
+];
+
+export const defaultRoles = [
+  {
+    id: 'super-admin',
+    name: 'Super Admin',
+    description: 'Full access to all features',
+    permissions: ALL_PERMISSIONS,
+    isSystem: true,
+    createdAt: new Date(0).toISOString(),
+  },
+  {
+    id: 'store-manager',
+    name: 'Store Manager',
+    description: 'Manage products, orders, leads and reviews',
+    permissions: [
+      'dashboard:view',
+      'products:read', 'products:write',
+      'categories:read', 'categories:write',
+      'orders:read', 'orders:write',
+      'leads:read', 'leads:write',
+      'reviews:read', 'reviews:write', 'reviews:delete',
+    ],
+    isSystem: false,
+    createdAt: new Date(0).toISOString(),
+  },
+  {
+    id: 'content-editor',
+    name: 'Content Editor',
+    description: 'Edit website content and categories',
+    permissions: [
+      'dashboard:view',
+      'categories:read', 'categories:write',
+      'content:read', 'content:write',
+      'products:read',
+    ],
+    isSystem: false,
+    createdAt: new Date(0).toISOString(),
+  },
+];
+
 export function seed() {
   return {
     categories,
@@ -199,5 +251,7 @@ export function seed() {
     content,
     leads: [],
     orders: [],
+    users: [],
+    roles: defaultRoles,
   };
 }

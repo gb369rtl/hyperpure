@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { seed, content as seedContent } from './seedData.js';
+import { seed, content as seedContent, defaultRoles } from './seedData.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.join(__dirname, 'data');
@@ -23,13 +23,20 @@ function atomicWrite(db) {
 export function read() {
   ensure();
   const db = JSON.parse(fs.readFileSync(DB_PATH, 'utf-8'));
-  // Forward-compatible defaults so older db.json files keep working.
   db.leads ??= [];
   db.orders ??= [];
   db.categories ??= [];
   db.products ??= [];
-  // Backfill any content keys added after the db was first created (e.g. marquee).
+  db.users ??= [];
   db.content = { ...seedContent, ...(db.content || {}) };
+  // Merge default roles: keep any custom roles, but ensure system roles are always present.
+  if (!db.roles || db.roles.length === 0) {
+    db.roles = defaultRoles;
+  } else {
+    for (const def of defaultRoles) {
+      if (!db.roles.find((r) => r.id === def.id)) db.roles.push(def);
+    }
+  }
   return db;
 }
 

@@ -55,8 +55,25 @@ export const api = {
 
   // admin
   login: (creds) => request('/admin/login', { method: 'POST', body: creds }),
+  getMe: () => request('/admin/me', { authed: true }),
   overview: () => request('/admin/overview', { authed: true }),
   updateContent: (body) => request('/admin/content', { method: 'PUT', body, authed: true }),
+  // admin: roles
+  getRoles: () => request('/admin/roles', { authed: true }),
+  createRole: (body) => request('/admin/roles', { method: 'POST', body, authed: true }),
+  updateRole: (id, body) => request(`/admin/roles/${id}`, { method: 'PUT', body, authed: true }),
+  deleteRole: (id) => request(`/admin/roles/${id}`, { method: 'DELETE', authed: true }),
+
+  // admin: users
+  getUsers: (params = {}) => request(`/admin/users${qs(params) ? `?${qs(params)}` : ''}`, { authed: true }),
+  createUser: (body) => request('/admin/users', { method: 'POST', body, authed: true }),
+  updateUser: (id, body) => request(`/admin/users/${id}`, { method: 'PUT', body, authed: true }),
+  resetUserPassword: (id, body) => request(`/admin/users/${id}/password`, { method: 'PUT', body, authed: true }),
+  deleteUser: (id) => request(`/admin/users/${id}`, { method: 'DELETE', authed: true }),
+
+  // admin: permissions list
+  getPermissions: () => request('/admin/permissions', { authed: true }),
+
   // admin: reviews
   adminReviews: (params = {}) => request(`/admin/reviews${qs(params) ? `?${qs(params)}` : ''}`, { authed: true }),
   updateReview: (productId, reviewId, body) => request(`/admin/reviews/${productId}/${reviewId}`, { method: 'PUT', body, authed: true }),

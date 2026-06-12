@@ -3,9 +3,10 @@ import cors from 'cors';
 import compression from 'compression';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import crypto from 'crypto';
+import crypto, { scryptSync, randomBytes, timingSafeEqual } from 'crypto';
 import jwt from 'jsonwebtoken';
 import { read, write, reset } from './store.js';
+import { ALL_PERMISSIONS } from './seedData.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -15,40 +16,64 @@ const ADMIN_PASS = process.env.ADMIN_PASS || 'admin123';
 const MIN_ORDER = 1000;
 const ORDER_STATUSES = ['placed', 'confirmed', 'packed', 'shipped', 'delivered', 'cancelled'];
 
-// Warn loudly in production if secrets are still defaults
 if (process.env.NODE_ENV === 'production') {
-  if (JWT_SECRET === 'samagra-dev-secret-change-me') console.warn('⚠️  JWT_SECRET is using the default dev value — set a strong secret in .env');
-  if (ADMIN_PASS === 'admin123') console.warn('⚠️  ADMIN_PASS is using the default "admin123" — set a strong password in .env');
+  if (JWT_SECRET === 'samagra-dev-secret-change-me') console.warn('⚠️  Set JWT_SECRET in .env');
+  if (ADMIN_PASS === 'admin123') console.warn('⚠️  Set ADMIN_PASS in .env');
 }
 
+// ---------- password helpers (Node built-in crypto, no extra deps) ----------
+function hashPassword(password) {
+  const salt = randomBytes(16).toString('hex');
+  const hash = scryptSync(password, salt, 64);
+  return `${salt}:${hash.toString('hex')}`;
+}
+
+function verifyPassword(password, stored) {
+  const [salt, hash] = stored.split(':');
+  if (!salt || !hash) return false;
+  try {
+    const derived = scryptSync(password, salt, 64);
+    return timingSafeEqual(Buffer.from(hash, 'hex'), derived);
+  } catch {
+    return false;
+  }
+}
+
+// ---------- bootstrap default super-admin from env vars ----------
+function ensureDefaultAdmin() {
+  const db = read();
+  if (db.users.length > 0) return; // already set up
+  db.users.push({
+    id: crypto.randomUUID(),
+    username: ADMIN_USER,
+    passwordHash: hashPassword(ADMIN_PASS),
+    roleId: 'super-admin',
+    active: true,
+    createdAt: new Date().toISOString(),
+  });
+  write(db);
+  console.log(`✅ Default admin user "${ADMIN_USER}" created.`);
+}
+ensureDefaultAdmin();
+
 // ---------- security middleware ----------
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: 'cross-origin' },
-  contentSecurityPolicy: false, // API-only; no HTML served
-}));
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' }, contentSecurityPolicy: false }));
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
-  : true; // true = allow all in dev; set ALLOWED_ORIGINS in production
+  : true;
 
-app.use(cors({
-  origin: allowedOrigins,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
-
+app.use(cors({ origin: allowedOrigins, methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], allowedHeaders: ['Content-Type', 'Authorization'] }));
 app.use(compression());
 app.use(express.json({ limit: '100kb' }));
 
-// Rate limiters
-const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 200, standardHeaders: true, legacyHeaders: false });
-const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, standardHeaders: true, legacyHeaders: false, message: { error: 'Too many login attempts. Try again in 15 minutes.' } });
-const writeLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false, message: { error: 'Too many submissions. Try again later.' } });
-const reviewLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 5, standardHeaders: true, legacyHeaders: false, message: { error: 'Too many reviews. Try again later.' } });
-
+const limiter      = rateLimit({ windowMs: 15 * 60 * 1000, max: 200, standardHeaders: true, legacyHeaders: false });
+const authLimiter  = rateLimit({ windowMs: 15 * 60 * 1000, max: 10,  standardHeaders: true, legacyHeaders: false, message: { error: 'Too many login attempts. Try again in 15 minutes.' } });
+const writeLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 20,  standardHeaders: true, legacyHeaders: false, message: { error: 'Too many submissions. Try again later.' } });
+const reviewLimiter= rateLimit({ windowMs: 60 * 60 * 1000, max: 5,   standardHeaders: true, legacyHeaders: false, message: { error: 'Too many reviews. Try again later.' } });
 app.use(limiter);
 
-// ---------- helpers ----------
+// ---------- auth + RBAC middleware ----------
 const auth = (req, res, next) => {
   const header = req.headers.authorization || '';
   const token = header.startsWith('Bearer ') ? header.slice(7) : null;
@@ -61,6 +86,17 @@ const auth = (req, res, next) => {
   }
 };
 
+// Middleware factory: require a specific permission
+const can = (permission) => [
+  auth,
+  (req, res, next) => {
+    if (!(req.user?.permissions || []).includes(permission))
+      return res.status(403).json({ error: `Permission required: ${permission}` });
+    next();
+  },
+];
+
+// ---------- helpers ----------
 function paginate(items, page, limit, fallbackLimit = 12) {
   page = Math.max(1, parseInt(page, 10) || 1);
   limit = Math.min(100, Math.max(1, parseInt(limit, 10) || fallbackLimit));
@@ -73,7 +109,6 @@ function paginate(items, page, limit, fallbackLimit = 12) {
 const slugify = (s) =>
   String(s).toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
-// Sanitize a string: trim and cap length
 const sanitize = (v, max = 500) => String(v ?? '').trim().slice(0, max);
 
 // ---------- public ----------
@@ -94,16 +129,11 @@ app.get('/api/products', (req, res) => {
   if (category && category !== 'all') items = items.filter((p) => p.category === category);
   if (search) {
     const q = sanitize(search, 100).toLowerCase();
-    items = items.filter(
-      (p) => p.name.toLowerCase().includes(q) || p.category.includes(q) || (p.keyword || '').includes(q),
-    );
+    items = items.filter((p) => p.name.toLowerCase().includes(q) || p.category.includes(q) || (p.keyword || '').includes(q));
   }
 
   const prices = items.map((p) => p.price);
-  const facets = {
-    minPrice: prices.length ? Math.min(...prices) : 0,
-    maxPrice: prices.length ? Math.max(...prices) : 0,
-  };
+  const facets = { minPrice: prices.length ? Math.min(...prices) : 0, maxPrice: prices.length ? Math.max(...prices) : 0 };
 
   const minPrice = Number(req.query.minPrice);
   const maxPrice = Number(req.query.maxPrice);
@@ -117,11 +147,9 @@ app.get('/api/products', (req, res) => {
   else if (sort === 'price-desc') items = [...items].sort((a, b) => b.price - a.price);
   else if (sort === 'rating') items = [...items].sort((a, b) => b.rating - a.rating);
   else if (sort === 'name-asc') items = [...items].sort((a, b) => a.name.localeCompare(b.name));
-  else if (sort === 'discount')
-    items = [...items].sort((a, b) => (b.mrp - b.price) / (b.mrp || 1) - (a.mrp - a.price) / (a.mrp || 1));
+  else if (sort === 'discount') items = [...items].sort((a, b) => (b.mrp - b.price) / (b.mrp || 1) - (a.mrp - a.price) / (a.mrp || 1));
 
   const result = paginate(items, page, limit);
-  // Strip reviewsList from list view for performance
   result.items = result.items.map(({ reviewsList: _r, ...rest }) => rest);
   res.json({ ...result, facets });
 });
@@ -138,10 +166,9 @@ app.get('/api/products/:id', (req, res) => {
   res.json({ ...productData, related });
 });
 
-// ---------- reviews (public: read + submit) ----------
+// ---------- reviews ----------
 app.get('/api/products/:id/reviews', (req, res) => {
-  const db = read();
-  const product = db.products.find((p) => p.id === req.params.id);
+  const product = read().products.find((p) => p.id === req.params.id);
   if (!product) return res.status(404).json({ error: 'Not found' });
   const reviews = (product.reviewsList || []).filter((r) => r.status === 'approved');
   res.json(paginate(reviews, req.query.page, req.query.limit, 10));
@@ -152,87 +179,54 @@ app.post('/api/products/:id/reviews', reviewLimiter, (req, res) => {
   const product = db.products.find((p) => p.id === req.params.id);
   if (!product) return res.status(404).json({ error: 'Not found' });
 
-  const name = sanitize(req.body?.name, 80);
-  const text = sanitize(req.body?.text, 1000);
+  const name   = sanitize(req.body?.name, 80);
+  const text   = sanitize(req.body?.text, 1000);
   const rating = Math.min(5, Math.max(1, Number(req.body?.rating) || 0));
 
   if (!name) return res.status(400).json({ error: 'Name is required' });
-  if (!text || text.length < 10) return res.status(400).json({ error: 'Review must be at least 10 characters' });
+  if (text.length < 10) return res.status(400).json({ error: 'Review must be at least 10 characters' });
   if (!rating) return res.status(400).json({ error: 'Rating (1-5) is required' });
 
-  const review = {
-    id: crypto.randomUUID(),
-    productId: product.id,
-    productName: product.name,
-    name,
-    text,
-    rating,
-    status: 'pending', // admin approves before going live
-    createdAt: new Date().toISOString(),
-  };
-
-  if (!product.reviewsList) product.reviewsList = [];
-  product.reviewsList.unshift(review);
+  const review = { id: crypto.randomUUID(), productId: product.id, productName: product.name, name, text, rating, status: 'pending', createdAt: new Date().toISOString() };
+  product.reviewsList = [review, ...(product.reviewsList || [])];
   write(db);
   res.status(201).json({ ok: true, message: 'Your review has been submitted and will appear after approval.' });
 });
 
 // ---------- leads ----------
 app.post('/api/leads', writeLimiter, (req, res) => {
-  const name = sanitize(req.body?.name, 100);
-  const phone = sanitize(req.body?.phone, 20);
+  const name     = sanitize(req.body?.name, 100);
+  const phone    = sanitize(req.body?.phone, 20);
   const business = sanitize(req.body?.business, 150);
-  const type = sanitize(req.body?.type, 30);
-  const message = sanitize(req.body?.message, 500);
-
+  const type     = sanitize(req.body?.type, 30);
+  const message  = sanitize(req.body?.message, 500);
   if (!name) return res.status(400).json({ error: 'Name is required' });
   if (!phone) return res.status(400).json({ error: 'Phone is required' });
-  if (!/^[\d\s\+\-\(\)]{7,20}$/.test(phone)) return res.status(400).json({ error: 'Invalid phone number' });
-
+  if (!/^[\d\s+\-()‌]{7,20}$/.test(phone)) return res.status(400).json({ error: 'Invalid phone number' });
   const db = read();
-  const lead = {
-    id: crypto.randomUUID(),
-    name,
-    phone,
-    business,
-    type: type || 'callback',
-    message,
-    status: 'new',
-    createdAt: new Date().toISOString(),
-  };
-  db.leads.unshift(lead);
+  db.leads.unshift({ id: crypto.randomUUID(), name, phone, business, type: type || 'callback', message, status: 'new', createdAt: new Date().toISOString() });
   write(db);
-  res.status(201).json({ ok: true, lead });
+  res.status(201).json({ ok: true });
 });
 
-// ---------- orders (guest checkout) ----------
+// ---------- orders ----------
 app.post('/api/orders', writeLimiter, (req, res) => {
   const { customer, items, notes } = req.body || {};
-  const name = sanitize(customer?.name, 100);
+  const name  = sanitize(customer?.name, 100);
   const phone = sanitize(customer?.phone, 20);
-
   if (!name) return res.status(400).json({ error: 'Name is required' });
   if (!phone) return res.status(400).json({ error: 'Phone is required' });
-  if (!/^[\d\s\+\-\(\)]{7,20}$/.test(phone)) return res.status(400).json({ error: 'Invalid phone number' });
-  if (!Array.isArray(items) || items.length === 0)
-    return res.status(400).json({ error: 'Your cart is empty' });
+  if (!/^[\d\s+\-()‌]{7,20}$/.test(phone)) return res.status(400).json({ error: 'Invalid phone number' });
+  if (!Array.isArray(items) || items.length === 0) return res.status(400).json({ error: 'Your cart is empty' });
   if (items.length > 200) return res.status(400).json({ error: 'Too many items in cart' });
 
   const db = read();
   const lineItems = items.map((i) => {
     const p = db.products.find((x) => x.id === i.id);
-    const price = p ? p.price : 0; // always use server price, ignore client price
+    const price = p ? p.price : 0;
     const qty = Math.min(9999, Math.max(1, Number(i.qty) || 1));
-    return {
-      id: i.id,
-      name: p?.name || sanitize(i.name, 100),
-      unit: p?.unit || sanitize(i.unit, 50),
-      image: p?.image || '',
-      price,
-      qty,
-      lineTotal: price * qty,
-    };
-  }).filter((i) => i.price > 0); // drop unknown products
+    return p ? { id: i.id, name: p.name, unit: p.unit, image: p.image, price, qty, lineTotal: price * qty } : null;
+  }).filter(Boolean);
 
   if (lineItems.length === 0) return res.status(400).json({ error: 'No valid products in cart' });
   const total = lineItems.reduce((s, i) => s + i.lineTotal, 0);
@@ -241,14 +235,7 @@ app.post('/api/orders', writeLimiter, (req, res) => {
   const order = {
     id: 'SM' + Date.now().toString(36).toUpperCase(),
     status: 'placed',
-    customer: {
-      name,
-      phone,
-      business: sanitize(customer.business, 150),
-      address: sanitize(customer.address, 300),
-      city: sanitize(customer.city, 100),
-      pincode: sanitize(customer.pincode, 10),
-    },
+    customer: { name, phone, business: sanitize(customer.business, 150), address: sanitize(customer.address, 300), city: sanitize(customer.city, 100), pincode: sanitize(customer.pincode, 10) },
     items: lineItems,
     itemCount: lineItems.reduce((s, i) => s + i.qty, 0),
     total,
@@ -267,57 +254,199 @@ app.get('/api/orders/:id', (req, res) => {
 });
 
 app.post('/api/orders/track', writeLimiter, (req, res) => {
-  const id = sanitize(req.body?.id, 30);
+  const id    = sanitize(req.body?.id, 30);
   const phone = sanitize(req.body?.phone, 20);
-
-  if (!id && !phone) return res.status(400).json({ error: 'Provide an order ID or phone number to track' });
-
+  if (!id && !phone) return res.status(400).json({ error: 'Provide an order ID or phone number' });
   let orders = read().orders;
   if (id) orders = orders.filter((o) => o.id.toLowerCase() === id.toLowerCase());
   if (phone) orders = orders.filter((o) => o.customer.phone === phone);
-  // Limit exposure: return at most 20 orders, never full item details in list
-  res.json(orders.slice(0, 20).map((o) => ({
-    id: o.id,
-    status: o.status,
-    createdAt: o.createdAt,
-    total: o.total,
-    itemCount: o.itemCount,
-    customer: { name: o.customer.name, phone: o.customer.phone },
-  })));
+  res.json(orders.slice(0, 20).map((o) => ({ id: o.id, status: o.status, createdAt: o.createdAt, total: o.total, itemCount: o.itemCount, customer: { name: o.customer.name, phone: o.customer.phone } })));
 });
 
-// ---------- admin auth ----------
+// ============================================================
+// ADMIN AUTH
+// ============================================================
 app.post('/api/admin/login', authLimiter, (req, res) => {
-  const { username, password } = req.body || {};
-  if (username === ADMIN_USER && password === ADMIN_PASS) {
-    const token = jwt.sign({ username, role: 'admin' }, JWT_SECRET, { expiresIn: '12h' });
-    return res.json({ token, user: { username, role: 'admin' } });
-  }
-  res.status(401).json({ error: 'Invalid credentials' });
-});
+  const username = sanitize(req.body?.username, 80);
+  const password = String(req.body?.password ?? '');
+  if (!username || !password) return res.status(400).json({ error: 'Username and password are required' });
 
-app.get('/api/admin/me', auth, (req, res) => res.json({ user: req.user }));
-
-app.get('/api/admin/overview', auth, (_req, res) => {
   const db = read();
-  const active = db.orders.filter((o) => o.status !== 'cancelled');
-  const revenue = active.reduce((s, o) => s + o.total, 0);
-  const allReviews = db.products.flatMap((p) => p.reviewsList || []);
-  res.json({
-    products: db.products.length,
-    categories: db.categories.length,
-    leads: db.leads.length,
-    newLeads: db.leads.filter((l) => l.status === 'new').length,
-    orders: db.orders.length,
-    pendingOrders: db.orders.filter((o) => ['placed', 'confirmed', 'packed', 'shipped'].includes(o.status)).length,
-    revenue,
-    inStock: db.products.filter((p) => p.inStock).length,
-    pendingReviews: allReviews.filter((r) => r.status === 'pending').length,
-  });
+  const user = db.users.find((u) => u.username === username && u.active !== false);
+  if (!user || !verifyPassword(password, user.passwordHash))
+    return res.status(401).json({ error: 'Invalid credentials' });
+
+  const role = db.roles.find((r) => r.id === user.roleId);
+  const permissions = role?.permissions || [];
+
+  const token = jwt.sign(
+    { userId: user.id, username: user.username, roleId: user.roleId, roleName: role?.name || '', permissions },
+    JWT_SECRET,
+    { expiresIn: '12h' },
+  );
+  res.json({ token, user: { id: user.id, username: user.username, roleId: user.roleId, roleName: role?.name || '', permissions } });
 });
 
-// ---------- admin: products CRUD ----------
-app.post('/api/products', auth, (req, res) => {
+app.get('/api/admin/me', auth, (req, res) => {
+  const db = read();
+  const user = db.users.find((u) => u.id === req.user.userId);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  const role = db.roles.find((r) => r.id === user.roleId);
+  res.json({ id: user.id, username: user.username, roleId: user.roleId, roleName: role?.name || '', permissions: role?.permissions || [], active: user.active, createdAt: user.createdAt });
+});
+
+// ============================================================
+// ROLES CRUD
+// ============================================================
+app.get('/api/admin/roles', ...can('roles:read'), (_req, res) => {
+  const db = read();
+  // Attach user count per role
+  const counts = db.users.reduce((m, u) => ((m[u.roleId] = (m[u.roleId] || 0) + 1), m), {});
+  res.json(db.roles.map((r) => ({ ...r, userCount: counts[r.id] || 0 })));
+});
+
+app.post('/api/admin/roles', ...can('roles:write'), (req, res) => {
+  const name        = sanitize(req.body?.name, 80);
+  const description = sanitize(req.body?.description, 300);
+  const permissions = (req.body?.permissions || []).filter((p) => ALL_PERMISSIONS.includes(p));
+  if (!name) return res.status(400).json({ error: 'Role name is required' });
+
+  const db = read();
+  const id = slugify(name) + '-' + crypto.randomUUID().slice(0, 4);
+  if (db.roles.find((r) => r.name.toLowerCase() === name.toLowerCase()))
+    return res.status(409).json({ error: 'A role with that name already exists' });
+
+  const role = { id, name, description, permissions, isSystem: false, createdAt: new Date().toISOString() };
+  db.roles.push(role);
+  write(db);
+  res.status(201).json(role);
+});
+
+app.put('/api/admin/roles/:id', ...can('roles:write'), (req, res) => {
+  const db = read();
+  const role = db.roles.find((r) => r.id === req.params.id);
+  if (!role) return res.status(404).json({ error: 'Role not found' });
+
+  if (req.body.name !== undefined) role.name = sanitize(req.body.name, 80);
+  if (req.body.description !== undefined) role.description = sanitize(req.body.description, 300);
+  if (req.body.permissions !== undefined && !role.isSystem)
+    role.permissions = (req.body.permissions || []).filter((p) => ALL_PERMISSIONS.includes(p));
+
+  write(db);
+  res.json(role);
+});
+
+app.delete('/api/admin/roles/:id', ...can('roles:delete'), (req, res) => {
+  const db = read();
+  const role = db.roles.find((r) => r.id === req.params.id);
+  if (!role) return res.status(404).json({ error: 'Role not found' });
+  if (role.isSystem) return res.status(403).json({ error: 'System roles cannot be deleted' });
+  if (db.users.some((u) => u.roleId === req.params.id))
+    return res.status(409).json({ error: 'Reassign all users before deleting this role' });
+  db.roles = db.roles.filter((r) => r.id !== req.params.id);
+  write(db);
+  res.json({ ok: true });
+});
+
+// ============================================================
+// USERS CRUD
+// ============================================================
+app.get('/api/admin/users', ...can('users:read'), (req, res) => {
+  const { search, page, limit } = req.query;
+  const db = read();
+  let users = db.users.map(({ passwordHash: _h, ...u }) => {
+    const role = db.roles.find((r) => r.id === u.roleId);
+    return { ...u, roleName: role?.name || u.roleId };
+  });
+  if (search) {
+    const q = sanitize(search, 80).toLowerCase();
+    users = users.filter((u) => u.username.toLowerCase().includes(q) || (u.roleName || '').toLowerCase().includes(q));
+  }
+  res.json(paginate(users, page, limit, 20));
+});
+
+app.post('/api/admin/users', ...can('users:write'), (req, res) => {
+  const username = sanitize(req.body?.username, 80);
+  const password = String(req.body?.password ?? '');
+  const roleId   = sanitize(req.body?.roleId, 80);
+
+  if (!username) return res.status(400).json({ error: 'Username is required' });
+  if (!password || password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  if (!roleId) return res.status(400).json({ error: 'Role is required' });
+
+  const db = read();
+  if (!db.roles.find((r) => r.id === roleId)) return res.status(400).json({ error: 'Invalid role' });
+  if (db.users.find((u) => u.username.toLowerCase() === username.toLowerCase()))
+    return res.status(409).json({ error: 'Username already taken' });
+
+  const user = { id: crypto.randomUUID(), username, passwordHash: hashPassword(password), roleId, active: true, createdAt: new Date().toISOString() };
+  db.users.push(user);
+  write(db);
+  const { passwordHash: _h, ...safe } = user;
+  res.status(201).json(safe);
+});
+
+app.put('/api/admin/users/:id', ...can('users:write'), (req, res) => {
+  const db = read();
+  const user = db.users.find((u) => u.id === req.params.id);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+
+  // Prevent removing the last super-admin
+  if (req.body.roleId && req.body.roleId !== 'super-admin' && user.roleId === 'super-admin') {
+    const otherAdmins = db.users.filter((u) => u.id !== user.id && u.roleId === 'super-admin' && u.active !== false);
+    if (otherAdmins.length === 0) return res.status(409).json({ error: 'Cannot demote the last Super Admin' });
+  }
+  if (req.body.active === false && user.roleId === 'super-admin') {
+    const otherAdmins = db.users.filter((u) => u.id !== user.id && u.roleId === 'super-admin' && u.active !== false);
+    if (otherAdmins.length === 0) return res.status(409).json({ error: 'Cannot deactivate the last Super Admin' });
+  }
+
+  if (req.body.username !== undefined) {
+    const newName = sanitize(req.body.username, 80);
+    if (db.users.find((u) => u.id !== user.id && u.username.toLowerCase() === newName.toLowerCase()))
+      return res.status(409).json({ error: 'Username already taken' });
+    user.username = newName;
+  }
+  if (req.body.roleId !== undefined) {
+    if (!db.roles.find((r) => r.id === req.body.roleId)) return res.status(400).json({ error: 'Invalid role' });
+    user.roleId = req.body.roleId;
+  }
+  if (req.body.active !== undefined) user.active = Boolean(req.body.active);
+
+  write(db);
+  const { passwordHash: _h, ...safe } = user;
+  res.json(safe);
+});
+
+app.put('/api/admin/users/:id/password', ...can('users:write'), (req, res) => {
+  const password = String(req.body?.password ?? '');
+  if (!password || password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  const db = read();
+  const user = db.users.find((u) => u.id === req.params.id);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  user.passwordHash = hashPassword(password);
+  write(db);
+  res.json({ ok: true });
+});
+
+app.delete('/api/admin/users/:id', ...can('users:delete'), (req, res) => {
+  if (req.user.userId === req.params.id) return res.status(409).json({ error: "You can't delete your own account" });
+  const db = read();
+  const user = db.users.find((u) => u.id === req.params.id);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  if (user.roleId === 'super-admin') {
+    const others = db.users.filter((u) => u.id !== user.id && u.roleId === 'super-admin' && u.active !== false);
+    if (others.length === 0) return res.status(409).json({ error: 'Cannot delete the last Super Admin' });
+  }
+  db.users = db.users.filter((u) => u.id !== req.params.id);
+  write(db);
+  res.json({ ok: true });
+});
+
+// ============================================================
+// ADMIN: PRODUCTS
+// ============================================================
+app.post('/api/products', ...can('products:write'), (req, res) => {
   const b = req.body || {};
   const name = sanitize(b.name, 150);
   if (!name || !b.category) return res.status(400).json({ error: 'name and category required' });
@@ -325,8 +454,7 @@ app.post('/api/products', auth, (req, res) => {
   const slug = slugify(name);
   const product = {
     id: slug + '-' + crypto.randomUUID().slice(0, 6),
-    name,
-    slug,
+    name, slug,
     category: sanitize(b.category, 50),
     unit: sanitize(b.unit, 50) || '1 unit',
     price: Number(b.price) || 0,
@@ -345,34 +473,34 @@ app.post('/api/products', auth, (req, res) => {
   res.status(201).json(product);
 });
 
-app.put('/api/products/:id', auth, (req, res) => {
+app.put('/api/products/:id', ...can('products:write'), (req, res) => {
   const db = read();
   const idx = db.products.findIndex((p) => p.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Not found' });
   const b = req.body || {};
-  const current = db.products[idx];
+  const cur = db.products[idx];
   db.products[idx] = {
-    ...current,
-    name: b.name !== undefined ? sanitize(b.name, 150) : current.name,
-    category: b.category !== undefined ? sanitize(b.category, 50) : current.category,
-    unit: b.unit !== undefined ? sanitize(b.unit, 50) : current.unit,
-    description: b.description !== undefined ? sanitize(b.description, 1000) : current.description,
-    badge: b.badge !== undefined ? sanitize(b.badge, 30) : current.badge,
-    image: b.image !== undefined ? sanitize(b.image, 500) : current.image,
-    keyword: b.keyword !== undefined ? sanitize(b.keyword, 100) : current.keyword,
-    price: b.price !== undefined ? Number(b.price) : current.price,
-    mrp: b.mrp !== undefined ? Number(b.mrp) : current.mrp,
-    rating: b.rating !== undefined ? Number(b.rating) : current.rating,
-    reviews: b.reviews !== undefined ? Number(b.reviews) : current.reviews,
-    inStock: b.inStock !== undefined ? Boolean(b.inStock) : current.inStock,
-    id: current.id,
-    reviewsList: current.reviewsList || [],
+    ...cur,
+    name:        b.name        !== undefined ? sanitize(b.name, 150)        : cur.name,
+    category:    b.category    !== undefined ? sanitize(b.category, 50)     : cur.category,
+    unit:        b.unit        !== undefined ? sanitize(b.unit, 50)         : cur.unit,
+    description: b.description !== undefined ? sanitize(b.description, 1000): cur.description,
+    badge:       b.badge       !== undefined ? sanitize(b.badge, 30)        : cur.badge,
+    image:       b.image       !== undefined ? sanitize(b.image, 500)       : cur.image,
+    keyword:     b.keyword     !== undefined ? sanitize(b.keyword, 100)     : cur.keyword,
+    price:       b.price       !== undefined ? Number(b.price)              : cur.price,
+    mrp:         b.mrp         !== undefined ? Number(b.mrp)                : cur.mrp,
+    rating:      b.rating      !== undefined ? Number(b.rating)             : cur.rating,
+    reviews:     b.reviews     !== undefined ? Number(b.reviews)            : cur.reviews,
+    inStock:     b.inStock     !== undefined ? Boolean(b.inStock)           : cur.inStock,
+    id: cur.id,
+    reviewsList: cur.reviewsList || [],
   };
   write(db);
   res.json(db.products[idx]);
 });
 
-app.delete('/api/products/:id', auth, (req, res) => {
+app.delete('/api/products/:id', ...can('products:delete'), (req, res) => {
   const db = read();
   const before = db.products.length;
   db.products = db.products.filter((p) => p.id !== req.params.id);
@@ -381,8 +509,10 @@ app.delete('/api/products/:id', auth, (req, res) => {
   res.json({ ok: true });
 });
 
-// ---------- admin: categories ----------
-app.post('/api/categories', auth, (req, res) => {
+// ============================================================
+// ADMIN: CATEGORIES
+// ============================================================
+app.post('/api/categories', ...can('categories:write'), (req, res) => {
   const b = req.body || {};
   const name = sanitize(b.name, 100);
   if (!name) return res.status(400).json({ error: 'name required' });
@@ -395,68 +525,60 @@ app.post('/api/categories', auth, (req, res) => {
   res.status(201).json(category);
 });
 
-app.put('/api/categories/:id', auth, (req, res) => {
+app.put('/api/categories/:id', ...can('categories:write'), (req, res) => {
   const db = read();
   const cat = db.categories.find((c) => c.id === req.params.id);
   if (!cat) return res.status(404).json({ error: 'Not found' });
-  if (req.body.name !== undefined) cat.name = sanitize(req.body.name, 100);
-  if (req.body.tagline !== undefined) cat.tagline = sanitize(req.body.tagline, 200);
-  if (req.body.image !== undefined) cat.image = sanitize(req.body.image, 500);
+  if (req.body.name     !== undefined) cat.name     = sanitize(req.body.name, 100);
+  if (req.body.tagline  !== undefined) cat.tagline  = sanitize(req.body.tagline, 200);
+  if (req.body.image    !== undefined) cat.image    = sanitize(req.body.image, 500);
   write(db);
   res.json(cat);
 });
 
-app.delete('/api/categories/:id', auth, (req, res) => {
+app.delete('/api/categories/:id', ...can('categories:delete'), (req, res) => {
   const db = read();
   db.categories = db.categories.filter((c) => c.id !== req.params.id);
   write(db);
   res.json({ ok: true });
 });
 
-// ---------- admin: reviews ----------
-app.get('/api/admin/reviews', auth, (req, res) => {
+// ============================================================
+// ADMIN: REVIEWS
+// ============================================================
+app.get('/api/admin/reviews', ...can('reviews:read'), (req, res) => {
   const { status, search, page, limit } = req.query;
   const db = read();
-  let reviews = db.products.flatMap((p) =>
-    (p.reviewsList || []).map((r) => ({ ...r, productId: p.id, productName: p.name }))
-  );
+  let reviews = db.products.flatMap((p) => (p.reviewsList || []).map((r) => ({ ...r, productId: p.id, productName: p.name })));
   if (status && status !== 'all') reviews = reviews.filter((r) => r.status === status);
   if (search) {
     const q = sanitize(search, 100).toLowerCase();
-    reviews = reviews.filter((r) =>
-      r.name.toLowerCase().includes(q) || r.text.toLowerCase().includes(q) || r.productName.toLowerCase().includes(q)
-    );
+    reviews = reviews.filter((r) => r.name.toLowerCase().includes(q) || r.text.toLowerCase().includes(q) || r.productName.toLowerCase().includes(q));
   }
   reviews.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   res.json(paginate(reviews, page, limit, 15));
 });
 
-app.put('/api/admin/reviews/:productId/:reviewId', auth, (req, res) => {
+app.put('/api/admin/reviews/:productId/:reviewId', ...can('reviews:write'), (req, res) => {
   const { productId, reviewId } = req.params;
   const db = read();
   const product = db.products.find((p) => p.id === productId);
   if (!product) return res.status(404).json({ error: 'Product not found' });
   const review = (product.reviewsList || []).find((r) => r.id === reviewId);
   if (!review) return res.status(404).json({ error: 'Review not found' });
-
-  const newStatus = req.body?.status;
-  if (!['approved', 'rejected', 'pending'].includes(newStatus))
+  if (!['approved', 'rejected', 'pending'].includes(req.body?.status))
     return res.status(400).json({ error: 'status must be approved, rejected, or pending' });
-
-  review.status = newStatus;
-
-  // Recompute aggregate rating from approved reviews
+  review.status = req.body.status;
   const approved = (product.reviewsList || []).filter((r) => r.status === 'approved');
   if (approved.length > 0) {
     product.rating = Math.round((approved.reduce((s, r) => s + r.rating, 0) / approved.length) * 10) / 10;
     product.reviews = approved.length;
   }
-
   write(db);
   res.json(review);
 });
 
-app.delete('/api/admin/reviews/:productId/:reviewId', auth, (req, res) => {
+app.delete('/api/admin/reviews/:productId/:reviewId', ...can('reviews:delete'), (req, res) => {
   const { productId, reviewId } = req.params;
   const db = read();
   const product = db.products.find((p) => p.id === productId);
@@ -468,8 +590,10 @@ app.delete('/api/admin/reviews/:productId/:reviewId', auth, (req, res) => {
   res.json({ ok: true });
 });
 
-// ---------- admin: leads ----------
-app.get('/api/admin/leads', auth, (req, res) => {
+// ============================================================
+// ADMIN: LEADS
+// ============================================================
+app.get('/api/admin/leads', ...can('leads:read'), (req, res) => {
   const { search, status, page, limit } = req.query;
   let items = read().leads;
   if (status && status !== 'all') items = items.filter((l) => l.status === status);
@@ -480,7 +604,7 @@ app.get('/api/admin/leads', auth, (req, res) => {
   res.json(paginate(items, page, limit, 10));
 });
 
-app.put('/api/admin/leads/:id', auth, (req, res) => {
+app.put('/api/admin/leads/:id', ...can('leads:write'), (req, res) => {
   const db = read();
   const lead = db.leads.find((l) => l.id === req.params.id);
   if (!lead) return res.status(404).json({ error: 'Not found' });
@@ -489,21 +613,21 @@ app.put('/api/admin/leads/:id', auth, (req, res) => {
   res.json(lead);
 });
 
-// ---------- admin: orders ----------
-app.get('/api/admin/orders', auth, (req, res) => {
+// ============================================================
+// ADMIN: ORDERS
+// ============================================================
+app.get('/api/admin/orders', ...can('orders:read'), (req, res) => {
   const { search, status, page, limit } = req.query;
   let items = read().orders;
   if (status && status !== 'all') items = items.filter((o) => o.status === status);
   if (search) {
     const q = sanitize(search, 100).toLowerCase();
-    items = items.filter((o) =>
-      `${o.id} ${o.customer.name} ${o.customer.phone} ${o.customer.business}`.toLowerCase().includes(q),
-    );
+    items = items.filter((o) => `${o.id} ${o.customer.name} ${o.customer.phone} ${o.customer.business}`.toLowerCase().includes(q));
   }
   res.json(paginate(items, page, limit, 10));
 });
 
-app.put('/api/admin/orders/:id', auth, (req, res) => {
+app.put('/api/admin/orders/:id', ...can('orders:write'), (req, res) => {
   const db = read();
   const order = db.orders.find((o) => o.id === req.params.id);
   if (!order) return res.status(404).json({ error: 'Not found' });
@@ -512,15 +636,37 @@ app.put('/api/admin/orders/:id', auth, (req, res) => {
   res.json(order);
 });
 
-// ---------- admin: content ----------
-app.put('/api/admin/content', auth, (req, res) => {
-  const body = req.body || {};
+// ============================================================
+// ADMIN: CONTENT + OVERVIEW + RESET
+// ============================================================
+app.get('/api/admin/overview', ...can('dashboard:view'), (_req, res) => {
   const db = read();
-  db.content = { ...db.content, ...body };
+  const active = db.orders.filter((o) => o.status !== 'cancelled');
+  const allReviews = db.products.flatMap((p) => p.reviewsList || []);
+  res.json({
+    products: db.products.length,
+    categories: db.categories.length,
+    leads: db.leads.length,
+    newLeads: db.leads.filter((l) => l.status === 'new').length,
+    orders: db.orders.length,
+    pendingOrders: db.orders.filter((o) => ['placed', 'confirmed', 'packed', 'shipped'].includes(o.status)).length,
+    revenue: active.reduce((s, o) => s + o.total, 0),
+    inStock: db.products.filter((p) => p.inStock).length,
+    pendingReviews: allReviews.filter((r) => r.status === 'pending').length,
+    users: db.users.length,
+  });
+});
+
+app.put('/api/admin/content', ...can('content:write'), (req, res) => {
+  const db = read();
+  db.content = { ...db.content, ...(req.body || {}) };
   write(db);
   res.json(db.content);
 });
 
-app.post('/api/admin/reset', auth, (_req, res) => res.json({ ok: true, db: reset() }));
+app.post('/api/admin/reset', ...can('settings:manage'), (_req, res) => res.json({ ok: true, db: reset() }));
+
+// Public endpoint for available permissions list (for role builder UI)
+app.get('/api/admin/permissions', auth, (_req, res) => res.json(ALL_PERMISSIONS));
 
 app.listen(PORT, () => console.log(`✅ Samagra API running on http://localhost:${PORT}`));

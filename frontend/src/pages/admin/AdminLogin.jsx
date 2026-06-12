@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Lock, User } from 'lucide-react';
-import { api, setToken } from '../../lib/api.js';
+import { api } from '../../lib/api.js';
+import { useAuth } from '../../context/AuthContext.jsx';
 import Logo from '../../components/Logo.jsx';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [creds, setCreds] = useState({ username: 'admin', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -15,8 +17,8 @@ export default function AdminLogin() {
     setLoading(true);
     setError('');
     try {
-      const { token } = await api.login(creds);
-      setToken(token);
+      const { token, user } = await api.login(creds);
+      login(token, user);
       navigate('/admin');
     } catch (err) {
       setError(err.message);
@@ -28,7 +30,7 @@ export default function AdminLogin() {
   return (
     <div className="grid min-h-screen place-items-center bg-ink px-4">
       <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-card">
-        <Link to="/" className="flex items-center justify-center" aria-label="Hyperpure home">
+        <Link to="/" className="flex items-center justify-center" aria-label="Samagra home">
           <Logo markSize={38} textClass="text-2xl text-ink" />
         </Link>
         <h1 className="mt-6 text-center font-display text-xl font-extrabold">Admin Panel</h1>
