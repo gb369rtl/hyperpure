@@ -17,9 +17,8 @@ export default function Dashboard() {
         setOrders(ord.items || []);
         setLeads(l.items || []);
       })
-      .catch(() => {
-        clearToken();
-        navigate('/admin/login');
+      .catch((e) => {
+        if (e.status === 401) { clearToken(); navigate('/admin/login'); }
       });
   }, [navigate]);
 

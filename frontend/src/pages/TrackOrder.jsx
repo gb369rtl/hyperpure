@@ -17,15 +17,23 @@ export default function TrackOrder() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const search = async (e) => {
     e.preventDefault();
     if (!query.trim()) return;
     setLoading(true);
-    const isId = /^hp/i.test(query.trim());
-    const res = await api.trackOrders(isId ? { id: query.trim() } : { phone: query.trim() }).catch(() => []);
-    setResults(res);
-    setLoading(false);
+    setError('');
+    try {
+      const isId = /^SM/i.test(query.trim());
+      const res = await api.trackOrders(isId ? { id: query.trim() } : { phone: query.trim() });
+      setResults(res);
+    } catch {
+      setError('Unable to fetch orders. Please try again.');
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -40,7 +48,7 @@ export default function TrackOrder() {
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="e.g. HPMQ86DKE8 or 9876512345"
+                placeholder="e.g. SM4K2X9B or 9876512345"
                 className="w-full bg-transparent text-sm text-ink outline-none placeholder:text-ink/40 dark:text-cream dark:placeholder:text-cream/40"
               />
             </div>
@@ -52,7 +60,13 @@ export default function TrackOrder() {
       <div className="container-x py-10">
         {loading && <p className="text-center text-ink/50 dark:text-cream/50">Searching…</p>}
 
-        {results && !loading && results.length === 0 && (
+        {error && (
+          <div className="mx-auto max-w-3xl rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 dark:bg-red-500/10 dark:text-red-400">
+            {error}
+          </div>
+        )}
+
+        {results && !loading && results.length === 0 && !error && (
           <div className="py-16 text-center text-ink/50 dark:text-cream/50">
             <Package className="mx-auto" size={48} />
             <p className="mt-3 text-lg font-semibold">No orders found</p>

@@ -36,13 +36,19 @@ export default function OrderConfirmation() {
       <div className="container-x py-10">
         <div className="card mx-auto max-w-3xl overflow-hidden">
           {/* header */}
-          <div className="bg-brand-600 p-8 text-center text-white">
-            <CheckCircle2 className="mx-auto" size={56} />
-            <h1 className="mt-3 font-display text-2xl font-extrabold">Order Placed Successfully!</h1>
+          <div className={`p-8 text-center text-white ${cancelled ? 'bg-red-600' : 'bg-brand-600'}`}>
+            {cancelled
+              ? <Package className="mx-auto" size={56} />
+              : <CheckCircle2 className="mx-auto" size={56} />}
+            <h1 className="mt-3 font-display text-2xl font-extrabold">
+              {cancelled ? 'Order Cancelled' : 'Order Placed Successfully!'}
+            </h1>
             <p className="mt-1 text-white/85">
               Order ID: <b className="nums">{order.id}</b>
             </p>
-            <p className="mt-1 text-sm text-white/70">A confirmation will be sent to {order.customer.phone}.</p>
+            <p className="mt-1 text-sm text-white/70">
+              {cancelled ? 'This order has been cancelled.' : `A confirmation will be sent to ${order.customer.phone}.`}
+            </p>
           </div>
 
           <div className="p-6 md:p-8">

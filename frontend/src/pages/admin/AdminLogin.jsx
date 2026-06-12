@@ -8,7 +8,7 @@ import Logo from '../../components/Logo.jsx';
 export default function AdminLogin() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [creds, setCreds] = useState({ username: 'admin', password: '' });
+  const [creds, setCreds] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -63,7 +63,7 @@ export default function AdminLogin() {
         </form>
 
         <p className="mt-4 rounded-lg bg-ink/[0.04] px-3 py-2 text-center text-xs text-ink/55">
-          Demo credentials — <b>admin</b> / <b>admin123</b>
+          Contact your system administrator for credentials.
         </p>
       </div>
     </div>

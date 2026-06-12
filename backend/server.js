@@ -202,7 +202,7 @@ app.post('/api/leads', writeLimiter, (req, res) => {
   const message  = sanitize(req.body?.message, 500);
   if (!name) return res.status(400).json({ error: 'Name is required' });
   if (!phone) return res.status(400).json({ error: 'Phone is required' });
-  if (!/^[\d\s+\-()‌]{7,20}$/.test(phone)) return res.status(400).json({ error: 'Invalid phone number' });
+  if (!/^[\d\s+\-()]{7,15}$/.test(phone)) return res.status(400).json({ error: 'Invalid phone number' });
   const db = read();
   db.leads.unshift({ id: crypto.randomUUID(), name, phone, business, type: type || 'callback', message, status: 'new', createdAt: new Date().toISOString() });
   write(db);
@@ -216,7 +216,7 @@ app.post('/api/orders', writeLimiter, (req, res) => {
   const phone = sanitize(customer?.phone, 20);
   if (!name) return res.status(400).json({ error: 'Name is required' });
   if (!phone) return res.status(400).json({ error: 'Phone is required' });
-  if (!/^[\d\s+\-()‌]{7,20}$/.test(phone)) return res.status(400).json({ error: 'Invalid phone number' });
+  if (!/^[\d\s+\-()]{7,15}$/.test(phone)) return res.status(400).json({ error: 'Invalid phone number' });
   if (!Array.isArray(items) || items.length === 0) return res.status(400).json({ error: 'Your cart is empty' });
   if (items.length > 200) return res.status(400).json({ error: 'Too many items in cart' });
 
@@ -253,7 +253,7 @@ app.get('/api/orders/:id', (req, res) => {
   res.json(order);
 });
 
-app.post('/api/orders/track', writeLimiter, (req, res) => {
+app.post('/api/orders/track', limiter, (req, res) => {
   const id    = sanitize(req.body?.id, 30);
   const phone = sanitize(req.body?.phone, 20);
   if (!id && !phone) return res.status(400).json({ error: 'Provide an order ID or phone number' });
@@ -371,7 +371,7 @@ app.post('/api/admin/users', ...can('users:write'), (req, res) => {
   const roleId   = sanitize(req.body?.roleId, 80);
 
   if (!username) return res.status(400).json({ error: 'Username is required' });
-  if (!password || password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  if (!password || password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' });
   if (!roleId) return res.status(400).json({ error: 'Role is required' });
 
   const db = read();
@@ -420,7 +420,7 @@ app.put('/api/admin/users/:id', ...can('users:write'), (req, res) => {
 
 app.put('/api/admin/users/:id/password', ...can('users:write'), (req, res) => {
   const password = String(req.body?.password ?? '');
-  if (!password || password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  if (!password || password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' });
   const db = read();
   const user = db.users.find((u) => u.id === req.params.id);
   if (!user) return res.status(404).json({ error: 'User not found' });
@@ -657,9 +657,13 @@ app.get('/api/admin/overview', ...can('dashboard:view'), (_req, res) => {
   });
 });
 
+const CONTENT_KEYS = ['hero', 'marquee', 'features', 'steps', 'comparison', 'stories', 'bigStats', 'trust', 'industries', 'cta', 'faqs'];
 app.put('/api/admin/content', ...can('content:write'), (req, res) => {
   const db = read();
-  db.content = { ...db.content, ...(req.body || {}) };
+  const patch = req.body || {};
+  for (const key of Object.keys(patch)) {
+    if (CONTENT_KEYS.includes(key)) db.content[key] = patch[key];
+  }
   write(db);
   res.json(db.content);
 });

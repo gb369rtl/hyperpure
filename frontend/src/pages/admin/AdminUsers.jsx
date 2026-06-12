@@ -131,7 +131,7 @@ export default function AdminUsers() {
   const load = () => {
     setLoading(true);
     Promise.all([api.getUsers(), api.getRoles()])
-      .then(([u, r]) => { setUsers(u); setRoles(r); })
+      .then(([u, r]) => { setUsers(u.items ?? u); setRoles(r); })
       .catch(() => {})
       .finally(() => setLoading(false));
   };

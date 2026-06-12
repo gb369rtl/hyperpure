@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 const QuoteContext = createContext(null);
-const KEY = 'hp_quote';
+const KEY = 'sm_quote';
 
 export function QuoteProvider({ children }) {
   const [items, setItems] = useState(() => {

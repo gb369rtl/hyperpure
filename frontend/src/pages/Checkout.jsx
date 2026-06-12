@@ -31,6 +31,14 @@ export default function Checkout() {
       setError(`Minimum order value is ${inr(MIN_ORDER)}. Add ${inr(MIN_ORDER - total)} more.`);
       return;
     }
+    if (!/^[\d\s+\-()+]{7,15}$/.test(form.phone.trim())) {
+      setError('Enter a valid phone number (7–15 digits).');
+      return;
+    }
+    if (!/^\d{6}$/.test(form.pincode.trim())) {
+      setError('Pincode must be exactly 6 digits.');
+      return;
+    }
     setSubmitting(true);
     try {
       const order = await api.createOrder({

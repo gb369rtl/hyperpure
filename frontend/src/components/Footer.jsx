@@ -28,7 +28,7 @@ const cols = [
     title: 'Company',
     links: [
       ['About Us', '/#footer'],
-      ['Why Hyperpure', '/#why'],
+      ['Why Samagra', '/#why'],
       ['Success Stories', '/#why'],
       ['Blog', '/#faq'],
       ['Contact Us', '/#footer'],
@@ -41,7 +41,7 @@ export default function Footer() {
     <footer id="footer" className="bg-ink text-white/80">
       <div className="container-x grid grid-cols-2 gap-8 py-14 md:grid-cols-3 lg:grid-cols-5">
         <div className="col-span-2 lg:col-span-2">
-          <Link to="/" className="flex items-center" aria-label="Hyperpure home">
+          <Link to="/" className="flex items-center" aria-label="Samagra home">
             <Logo markSize={36} textClass="text-white" />
           </Link>
           <p className="mt-4 max-w-xs text-sm text-white/60">
@@ -93,7 +93,7 @@ export default function Footer() {
 
       <div className="border-t border-white/10">
         <div className="container-x flex flex-col items-center justify-between gap-3 py-5 text-xs text-white/50 sm:flex-row">
-          <p>© {new Date().getFullYear()} Hyperpure. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Samagra. All rights reserved.</p>
           <div className="flex gap-5">
             <a href="#" className="hover:text-white">Privacy Policy</a>
             <a href="#" className="hover:text-white">Terms & Conditions</a>

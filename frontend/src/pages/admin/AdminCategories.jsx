@@ -56,6 +56,7 @@ export default function AdminCategories() {
   const [categories, setCategories] = useState([]);
   const [editing, setEditing] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [deleteError, setDeleteError] = useState('');
 
   const load = () => {
     setLoading(true);
@@ -67,8 +68,13 @@ export default function AdminCategories() {
 
   const del = async (c) => {
     if (!confirm(`Delete category "${c.name}"? Products keep their category id.`)) return;
-    await api.deleteCategory(c.id);
-    load();
+    setDeleteError('');
+    try {
+      await api.deleteCategory(c.id);
+      load();
+    } catch (err) {
+      setDeleteError(err.message);
+    }
   };
 
   return (
@@ -80,6 +86,8 @@ export default function AdminCategories() {
         </div>
         <button onClick={() => setEditing('new')} className="btn-primary"><Plus size={16} /> Add Category</button>
       </div>
+
+      {deleteError && <p className="mt-4 rounded-xl bg-red-50 px-4 py-2 text-sm text-red-600 dark:bg-red-500/10 dark:text-red-400">{deleteError}</p>}
 
       {loading ? (
         <p className="py-10 text-center text-sm text-gray-400">Loading…</p>

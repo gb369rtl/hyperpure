@@ -93,6 +93,7 @@ export default function AdminProducts() {
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => {
     api.getCategories().then(setCategories).catch(() => {});
@@ -116,8 +117,13 @@ export default function AdminProducts() {
 
   const del = async (p) => {
     if (!confirm(`Delete "${p.name}"?`)) return;
-    await api.deleteProduct(p.id);
-    load();
+    setDeleteError('');
+    try {
+      await api.deleteProduct(p.id);
+      load();
+    } catch (err) {
+      setDeleteError(err.message);
+    }
   };
   const catName = (id) => categories.find((c) => c.id === id)?.name || id;
 
@@ -130,6 +136,8 @@ export default function AdminProducts() {
         </div>
         <button onClick={() => setEditing('new')} className="btn-primary"><Plus size={16} /> Add Product</button>
       </div>
+
+      {deleteError && <p className="mt-4 rounded-xl bg-red-50 px-4 py-2 text-sm text-red-600 dark:bg-red-500/10 dark:text-red-400">{deleteError}</p>}
 
       <div className="mt-5 flex flex-wrap gap-3">
         <div className="flex flex-1 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 dark:border-white/15 dark:bg-ink-800">

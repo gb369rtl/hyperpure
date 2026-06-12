@@ -68,14 +68,18 @@ function ObjectList({ items = [], fields, template, onChange, cols = 2 }) {
 function Section({ title, desc, sectionKey, draft, onSave, defaultOpen = false, children }) {
   const [open, setOpen] = useState(defaultOpen);
   const [state, setState] = useState('idle');
+  const [saveError, setSaveError] = useState('');
   const save = async () => {
     setState('saving');
+    setSaveError('');
     try {
       await onSave(sectionKey);
       setState('saved');
       setTimeout(() => setState('idle'), 1800);
-    } catch {
-      setState('idle');
+    } catch (err) {
+      setState('error');
+      setSaveError(err.message || 'Save failed. Please try again.');
+      setTimeout(() => setState('idle'), 3000);
     }
   };
   return (
@@ -90,11 +94,13 @@ function Section({ title, desc, sectionKey, draft, onSave, defaultOpen = false, 
       {open && (
         <div className="border-t border-ink/[0.07] p-5 dark:border-cream/10">
           {children}
-          <div className="mt-5 flex items-center gap-3">
+          <div className="mt-5 flex flex-wrap items-center gap-3">
             <button onClick={save} disabled={state === 'saving'} className="btn-primary disabled:opacity-60">
               {state === 'saved' ? <><Check size={16} /> Saved</> : <><Save size={16} /> {state === 'saving' ? 'Saving…' : 'Save changes'}</>}
             </button>
-            <span className="text-xs text-ink/45 dark:text-cream/45">Goes live on the website immediately.</span>
+            {saveError
+              ? <span className="text-xs text-red-500">{saveError}</span>
+              : <span className="text-xs text-ink/45 dark:text-cream/45">Goes live on the website immediately.</span>}
           </div>
         </div>
       )}
@@ -108,7 +114,7 @@ export default function AdminContent() {
   const [draft, setDraft] = useState(null);
 
   useEffect(() => {
-    api.getContent().then(setDraft).catch(() => { clearToken(); navigate('/admin/login'); });
+    api.getContent().then(setDraft).catch((e) => { if (e.status === 401) { clearToken(); navigate('/admin/login'); } });
   }, [navigate]);
 
   if (!draft) return <p className="py-10 text-center text-sm text-gray-400">Loading content…</p>;
