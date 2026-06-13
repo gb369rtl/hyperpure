@@ -2,7 +2,8 @@ import { MessageCircle } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext.jsx';
 
 export default function WhatsAppFab() {
-  const { waLink } = useSettings();
+  const { waLink, settings } = useSettings();
+  if (settings.whatsappVisible === false) return null;
   return (
     <a
       href={waLink()}

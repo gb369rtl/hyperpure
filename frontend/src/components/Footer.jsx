@@ -39,6 +39,7 @@ const cols = [
 export default function Footer() {
   const { settings } = useSettings();
   const social = settings.social || {};
+  const socialVisible = settings.socialVisible || {};
   const legal = settings.legal || {};
   const contact = settings.contact || {};
   const SOCIALS = [
@@ -58,8 +59,9 @@ export default function Footer() {
             Simplifying procurement for businesses with quality, reliability and transparency.
           </p>
           <div className="mt-5 flex gap-2">
-            {SOCIALS.map(({ Icon, key }) => (
-              social[key] ? (
+            {SOCIALS.map(({ Icon, key }) => {
+              const visible = social[key] && (socialVisible[key] ?? true);
+              return visible ? (
                 <a
                   key={key}
                   href={social[key]}
@@ -69,8 +71,8 @@ export default function Footer() {
                 >
                   <Icon size={16} />
                 </a>
-              ) : null
-            ))}
+              ) : null;
+            })}
           </div>
         </div>
 

@@ -24,6 +24,7 @@ const AdminReviews = lazy(() => import('./pages/admin/AdminReviews.jsx'));
 const AdminUsers = lazy(() => import('./pages/admin/AdminUsers.jsx'));
 const AdminRoles = lazy(() => import('./pages/admin/AdminRoles.jsx'));
 const AdminSettings = lazy(() => import('./pages/admin/AdminSettings.jsx'));
+const AdminCoupons = lazy(() => import('./pages/admin/AdminCoupons.jsx'));
 const Login = lazy(() => import('./pages/Login.jsx'));
 const Register = lazy(() => import('./pages/Register.jsx'));
 
@@ -111,6 +112,7 @@ export default function App() {
           <Route path="users" element={<AdminUsers />} />
           <Route path="roles" element={<AdminRoles />} />
           <Route path="settings" element={<AdminSettings />} />
+          <Route path="coupons" element={<AdminCoupons />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

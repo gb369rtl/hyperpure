@@ -75,6 +75,16 @@ export default function AdminSettings() {
           onChange={(e) => patch('whatsapp', e.target.value)}
           placeholder="919999999999"
         />
+        <label className="flex items-center justify-between rounded-lg border border-ink/10 p-3 dark:border-cream/15">
+          <span className="text-sm font-semibold text-ink dark:text-cream">Show WhatsApp button on website</span>
+          <button
+            type="button"
+            onClick={() => patch('whatsappVisible', !(data.whatsappVisible ?? true))}
+            className={`relative h-6 w-11 rounded-full transition-colors ${(data.whatsappVisible ?? true) ? 'bg-lime-400' : 'bg-gray-300 dark:bg-gray-600'}`}
+          >
+            <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${(data.whatsappVisible ?? true) ? 'translate-x-5' : 'translate-x-0.5'}`} />
+          </button>
+        </label>
       </Section>
 
       <Section title="Contact Details">
@@ -100,16 +110,30 @@ export default function AdminSettings() {
       </Section>
 
       <Section title="Social Media Links">
-        {['facebook', 'instagram', 'linkedin', 'twitter'].map((platform) => (
-          <Field
-            key={platform}
-            label={platform.charAt(0).toUpperCase() + platform.slice(1)}
-            type="url"
-            value={data.social?.[platform] || ''}
-            onChange={(e) => patchSub('social', platform, e.target.value)}
-            placeholder={`https://${platform}.com/yourpage`}
-          />
-        ))}
+        {['facebook', 'instagram', 'linkedin', 'twitter'].map((platform) => {
+          const visible = data.socialVisible?.[platform] ?? true;
+          return (
+            <div key={platform} className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-ink dark:text-cream">{platform.charAt(0).toUpperCase() + platform.slice(1)}</span>
+                <button
+                  type="button"
+                  onClick={() => patchSub('socialVisible', platform, !visible)}
+                  className={`relative h-5 w-9 rounded-full transition-colors ${visible ? 'bg-lime-400' : 'bg-gray-300 dark:bg-gray-600'}`}
+                >
+                  <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${visible ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                </button>
+              </div>
+              <input
+                type="url"
+                className="field"
+                value={data.social?.[platform] || ''}
+                onChange={(e) => patchSub('social', platform, e.target.value)}
+                placeholder={`https://${platform}.com/yourpage`}
+              />
+            </div>
+          );
+        })}
       </Section>
 
       <Section title="Legal Links">

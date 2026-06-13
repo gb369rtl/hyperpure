@@ -19,9 +19,6 @@
   }
   a:focus-visible,
   button:focus-visible,
-  input:focus-visible,
-  select:focus-visible,
-  textarea:focus-visible,
   [tabindex]:focus-visible {
     @apply outline-none ring-2 ring-lime-500 ring-offset-2 ring-offset-cream dark:ring-offset-ink;
   }
@@ -67,7 +64,7 @@
     @apply rounded-3xl border border-ink/[0.06] bg-white shadow-soft dark:border-cream/10 dark:bg-ink-800;
   }
   .field {
-    @apply w-full rounded-xl border border-ink/10 bg-white px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-ink/40 focus:border-lime-500 dark:border-cream/15 dark:bg-ink-700 dark:text-cream;
+    @apply w-full rounded-xl border border-ink/10 bg-white px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-ink/40 focus:border-lime-500 focus:ring-2 focus:ring-lime-500/20 dark:border-cream/15 dark:bg-ink-700 dark:text-cream;
   }
 }
 

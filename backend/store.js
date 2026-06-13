@@ -28,11 +28,22 @@ export function read() {
   db.categories ??= [];
   db.products ??= [];
   db.users ??= [];
+  db.coupons ??= [];
   db.content = { ...seedContent, ...(db.content || {}) };
   db.settings = { ...defaultSettings, ...(db.settings || {}) };
   if (db.settings.contact) db.settings.contact = { ...defaultSettings.contact, ...db.settings.contact };
   if (db.settings.social)  db.settings.social  = { ...defaultSettings.social,  ...db.settings.social  };
   if (db.settings.legal)   db.settings.legal   = { ...defaultSettings.legal,   ...db.settings.legal   };
+  db.settings.whatsappVisible ??= true;
+  db.settings.socialVisible ??= { facebook: true, instagram: true, linkedin: true, twitter: true };
+  if (db.settings.socialVisible) {
+    db.settings.socialVisible = {
+      facebook: db.settings.socialVisible.facebook ?? true,
+      instagram: db.settings.socialVisible.instagram ?? true,
+      linkedin: db.settings.socialVisible.linkedin ?? true,
+      twitter: db.settings.socialVisible.twitter ?? true,
+    };
+  }
   // Merge default roles: keep any custom roles, but ensure system roles are always present.
   if (!db.roles || db.roles.length === 0) {
     db.roles = defaultRoles;

@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { useSettings } from '../context/SettingsContext.jsx';
 import Logo from './Logo.jsx';
 import ThemeToggle from './ThemeToggle.jsx';
+import SearchOverlay from './SearchOverlay.jsx';
 
 const links = [
   { label: 'Catalogue', to: '/catalogue' },
@@ -19,10 +20,10 @@ export default function Navbar() {
   const navigate = useNavigate();
   const { count } = useQuote();
   const { user, isLoggedIn, isAdmin, logout } = useAuth();
-  const { waLink } = useSettings();
+  const { waLink, settings } = useSettings();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const [q, setQ] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef(null);
 
@@ -39,13 +40,8 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const submitSearch = (e) => {
-    e.preventDefault();
-    navigate(`/catalogue?search=${encodeURIComponent(q)}`);
-    setOpen(false);
-  };
-
   return (
+    <>
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
         scrolled
@@ -69,17 +65,9 @@ export default function Navbar() {
         </ul>
 
         <div className="flex items-center gap-2">
-          <form onSubmit={submitSearch} className="hidden md:block">
-            <div className="flex items-center gap-2 rounded-full border border-ink/10 bg-white/60 px-4 py-2 dark:border-cream/10 dark:bg-cream/5">
-              <Search size={15} className="text-ink/50 dark:text-cream/50" />
-              <input
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Search"
-                className="w-20 bg-transparent text-sm text-ink outline-none placeholder:text-ink/40 dark:text-cream dark:placeholder:text-cream/40 xl:w-32"
-              />
-            </div>
-          </form>
+          <button onClick={() => setSearchOpen(true)} className="grid h-10 w-10 place-items-center rounded-full hover:bg-ink/5 dark:hover:bg-cream/10" aria-label="Search">
+            <Search size={19} />
+          </button>
 
           <ThemeToggle />
 
@@ -124,9 +112,11 @@ export default function Navbar() {
             </Link>
           )}
 
-          <a href={waLink()} target="_blank" rel="noreferrer" className="hidden rounded-full bg-ink px-4 py-2 text-sm font-bold text-cream hover:bg-ink-700 dark:bg-lime-400 dark:text-ink dark:hover:bg-lime-300 md:inline-flex md:items-center md:gap-2">
-            <MessageCircle size={15} /> WhatsApp
-          </a>
+          {(settings.whatsappVisible ?? true) && (
+            <a href={waLink()} target="_blank" rel="noreferrer" className="hidden rounded-full bg-ink px-4 py-2 text-sm font-bold text-cream hover:bg-ink-700 dark:bg-lime-400 dark:text-ink dark:hover:bg-lime-300 md:inline-flex md:items-center md:gap-2">
+              <MessageCircle size={15} /> WhatsApp
+            </a>
+          )}
 
           <button className="grid h-10 w-10 place-items-center rounded-full hover:bg-ink/5 dark:hover:bg-cream/10 lg:hidden" onClick={() => setOpen((o) => !o)} aria-label="Menu">
             {open ? <X size={22} /> : <Menu size={22} />}
@@ -137,10 +127,13 @@ export default function Navbar() {
       {open && (
         <div className="border-t border-ink/10 bg-cream dark:border-cream/10 dark:bg-ink-800 lg:hidden">
           <div className="container-x flex flex-col gap-1 py-3">
-            <form onSubmit={submitSearch} className="mb-2 flex items-center gap-2 rounded-full bg-white px-4 py-2.5 dark:bg-cream/10">
+            <button
+              onClick={() => { setOpen(false); setSearchOpen(true); }}
+              className="mb-2 flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-left dark:bg-cream/10"
+            >
               <Search size={16} className="text-ink/50 dark:text-cream/50" />
-              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search products" className="w-full bg-transparent text-sm text-ink outline-none placeholder:text-ink/40 dark:text-cream dark:placeholder:text-cream/40" />
-            </form>
+              <span className="text-sm text-ink/40 dark:text-cream/40">Search products…</span>
+            </button>
             {links.map((l) => (
               <Link key={l.label} to={l.to} onClick={() => setOpen(false)} className="rounded-xl px-3 py-2 text-sm font-semibold text-ink hover:bg-ink/5 dark:text-cream dark:hover:bg-cream/5">
                 {l.label}
@@ -158,11 +151,15 @@ export default function Navbar() {
                   <Link to="/register" onClick={() => setOpen(false)} className="btn-outline flex-1">Register</Link>
                 </>
               )}
-              <a href={waLink()} target="_blank" rel="noreferrer" className="btn-primary flex-1">WhatsApp</a>
+              {(settings.whatsappVisible ?? true) && (
+                <a href={waLink()} target="_blank" rel="noreferrer" className="btn-primary flex-1">WhatsApp</a>
+              )}
             </div>
           </div>
         </div>
       )}
     </header>
+    {searchOpen && <SearchOverlay onClose={() => setSearchOpen(false)} />}
+    </>
   );
 }

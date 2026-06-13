@@ -29,15 +29,38 @@ export default function Checkout() {
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [couponCode, setCouponCode] = useState('');
+  const [coupon, setCoupon] = useState(null);
+  const [couponError, setCouponError] = useState('');
+  const [couponLoading, setCouponLoading] = useState(false);
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
-  const belowMin = total < MIN_ORDER;
+
+  const effectivePrice = (item) => item.discount > 0 ? Math.round(item.price * (1 - item.discount / 100)) : item.price;
+  const effectiveTotal = items.reduce((s, i) => s + effectivePrice(i) * i.qty, 0);
+
+  const belowMin = effectiveTotal < MIN_ORDER;
+
+  const applyCode = async () => {
+    if (!couponCode.trim()) return;
+    setCouponLoading(true); setCouponError(''); setCoupon(null);
+    try {
+      const productIds = items.map((i) => i.id);
+      const categoryIds = [...new Set(items.map((i) => i.category).filter(Boolean))];
+      const res = await api.validateCoupon({ code: couponCode.trim(), cartTotal: effectiveTotal, productIds, categoryIds });
+      setCoupon(res);
+    } catch (err) {
+      setCouponError(err.message);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
 
   const placeOrder = async (e) => {
     e.preventDefault();
     setError('');
     if (belowMin) {
-      setError(`Minimum order value is ${inr(MIN_ORDER)}. Add ${inr(MIN_ORDER - total)} more.`);
+      setError(`Minimum order value is ${inr(MIN_ORDER)}. Add ${inr(MIN_ORDER - effectiveTotal)} more.`);
       return;
     }
     if (!/^[\d\s+\-()+]{7,15}$/.test(form.phone.trim())) {
@@ -54,6 +77,7 @@ export default function Checkout() {
         customer: form,
         items: items.map((i) => ({ id: i.id, qty: i.qty })),
         notes: `Payment: ${PAYMENTS.find((p) => p.id === payment)?.label}. ${notes}`.trim(),
+        couponCode: coupon?.coupon?.code,
       });
       clear();
       navigate(`/order/${order.id}`);
@@ -146,6 +170,22 @@ export default function Checkout() {
               <span className="font-semibold">Order notes (optional)</span>
               <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Delivery instructions, GST number, etc." className="field mt-1" />
             </label>
+            <div className="mt-3">
+              <span className="text-sm font-semibold">Coupon Code</span>
+              <div className="mt-1 flex gap-2">
+                <input
+                  className="field flex-1"
+                  value={couponCode}
+                  onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCoupon(null); setCouponError(''); }}
+                  placeholder="ENTER CODE"
+                />
+                <button type="button" onClick={applyCode} disabled={couponLoading} className="btn-outline shrink-0">
+                  {couponLoading ? '…' : 'Apply'}
+                </button>
+              </div>
+              {couponError && <p className="mt-1 text-xs text-red-500">{couponError}</p>}
+              {coupon && <p className="mt-1 text-xs text-green-600">&#10003; {coupon.coupon.code} applied &mdash; saving {inr(coupon.discount)}</p>}
+            </div>
           </section>
         </div>
 
@@ -154,41 +194,49 @@ export default function Checkout() {
           <div className="card p-6">
             <h2 className="font-display text-lg font-bold">Order Summary</h2>
             <div className="mt-4 max-h-72 space-y-3 overflow-y-auto pr-1">
-              {items.map((i) => (
-                <div key={i.id} className="flex gap-3">
-                  <img src={i.image} alt="" className="h-14 w-14 shrink-0 rounded-lg object-cover" />
-                  <div className="flex-1">
-                    <div className="line-clamp-1 text-sm font-semibold">{i.name}</div>
-                    <div className="text-xs text-ink/55 dark:text-cream/55">{i.unit} · {inr(i.price)}</div>
-                    <div className="mt-1 flex items-center gap-2">
-                      <div className="flex items-center gap-1.5 rounded-md border border-ink/10 px-1 dark:border-cream/15">
-                        <button type="button" onClick={() => setQty(i.id, i.qty - 1)} className="px-1 leading-none"><Minus size={12} /></button>
-                        <span className="min-w-4 text-center text-xs font-bold nums">{i.qty}</span>
-                        <button type="button" onClick={() => setQty(i.id, i.qty + 1)} className="px-1 leading-none"><Plus size={12} /></button>
+              {items.map((i) => {
+                const ep = effectivePrice(i);
+                return (
+                  <div key={i.id} className="flex gap-3">
+                    <img src={i.image} alt="" className="h-14 w-14 shrink-0 rounded-lg object-cover" />
+                    <div className="flex-1">
+                      <div className="line-clamp-1 text-sm font-semibold">{i.name}</div>
+                      <div className="text-xs text-ink/55 dark:text-cream/55">{i.unit} · {inr(ep)}{i.discount > 0 && <span className="ml-1 text-green-600">{i.discount}% off</span>}</div>
+                      <div className="mt-1 flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 rounded-md border border-ink/10 px-1 dark:border-cream/15">
+                          <button type="button" onClick={() => setQty(i.id, i.qty - 1)} className="px-1 leading-none"><Minus size={12} /></button>
+                          <span className="min-w-4 text-center text-xs font-bold nums">{i.qty}</span>
+                          <button type="button" onClick={() => setQty(i.id, i.qty + 1)} className="px-1 leading-none"><Plus size={12} /></button>
+                        </div>
+                        <button type="button" onClick={() => remove(i.id)} className="text-ink/30 hover:text-red-500 dark:text-cream/30 dark:hover:text-red-400"><Trash2 size={14} /></button>
+                        <span className="ml-auto text-sm font-bold nums">{inr(ep * i.qty)}</span>
                       </div>
-                      <button type="button" onClick={() => remove(i.id)} className="text-ink/30 hover:text-red-500 dark:text-cream/30 dark:hover:text-red-400"><Trash2 size={14} /></button>
-                      <span className="ml-auto text-sm font-bold nums">{inr(i.price * i.qty)}</span>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="mt-4 space-y-2 border-t border-ink/[0.07] pt-4 text-sm dark:border-cream/10">
               <div className="flex justify-between text-ink/60 dark:text-cream/60">
-                <span>Subtotal</span><span className="nums">{inr(total)}</span>
+                <span>Subtotal</span><span className="nums">{inr(effectiveTotal)}</span>
               </div>
               <div className="flex justify-between text-ink/60 dark:text-cream/60">
                 <span>Delivery</span><span className="font-semibold text-brand-600">FREE</span>
               </div>
+              {coupon && (
+                <div className="flex justify-between text-green-600">
+                  <span>Coupon ({coupon.coupon.code})</span><span className="nums">-{inr(coupon.discount)}</span>
+                </div>
+              )}
               <div className="flex justify-between font-display text-lg font-extrabold">
-                <span>Total</span><span className="nums">{inr(total)}</span>
+                <span>Total</span><span className="nums">{inr(coupon ? coupon.finalTotal : effectiveTotal)}</span>
               </div>
             </div>
 
             {error && <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-500/10" role="alert">{error}</p>}
             {belowMin && !error && (
-              <p className="mt-3 text-xs text-amber-600">Minimum order value is {inr(MIN_ORDER)}.</p>
+              <p className="mt-3 text-xs text-amber-600">Minimum order value is {inr(MIN_ORDER)}. Add {inr(MIN_ORDER - effectiveTotal)} more.</p>
             )}
 
             <button disabled={submitting} className="btn-primary mt-4 w-full disabled:opacity-60">

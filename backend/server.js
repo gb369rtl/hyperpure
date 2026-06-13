@@ -140,7 +140,12 @@ app.get('/api/products', (req, res) => {
   if (category && category !== 'all') items = items.filter((p) => p.category === category);
   if (search) {
     const q = sanitize(search, 100).toLowerCase();
-    items = items.filter((p) => p.name.toLowerCase().includes(q) || p.category.includes(q) || (p.keyword || '').includes(q));
+    items = items.filter((p) =>
+      p.name.toLowerCase().includes(q) ||
+      p.category.includes(q) ||
+      (p.keyword || '').includes(q) ||
+      (p.tags || []).some((t) => t.toLowerCase().includes(q))
+    );
   }
 
   const prices = items.map((p) => p.price);
@@ -163,6 +168,12 @@ app.get('/api/products', (req, res) => {
   const result = paginate(items, page, limit);
   result.items = result.items.map(({ reviewsList: _r, ...rest }) => rest);
   res.json({ ...result, facets });
+});
+
+app.get('/api/tags', (_req, res) => {
+  const db = read();
+  const tags = [...new Set(db.products.flatMap((p) => p.tags || []))].sort();
+  res.json(tags);
 });
 
 app.get('/api/products/:id', (req, res) => {
@@ -243,13 +254,28 @@ app.post('/api/orders', writeLimiter, optionalAuth, (req, res) => {
   const total = lineItems.reduce((s, i) => s + i.lineTotal, 0);
   if (total < MIN_ORDER) return res.status(400).json({ error: `Minimum order value is ₹${MIN_ORDER}.` });
 
+  let discountAmount = 0;
+  let appliedCoupon = null;
+  const couponCode = sanitize(req.body?.couponCode, 30).toUpperCase().trim();
+  if (couponCode) {
+    const coup = (db.coupons || []).find((c) => c.code === couponCode && c.active !== false);
+    if (coup && (!coup.expiresAt || new Date(coup.expiresAt) >= new Date()) && (coup.maxUses === null || coup.usedCount < coup.maxUses) && total >= coup.minOrder) {
+      discountAmount = coup.type === 'percent' ? Math.round(total * coup.value / 100) : Math.min(coup.value, total);
+      appliedCoupon = coup.code;
+      coup.usedCount = (coup.usedCount || 0) + 1;
+    }
+  }
+  const finalTotal = total - discountAmount;
+
   const order = {
     id: 'SM' + Date.now().toString(36).toUpperCase(),
     status: 'placed',
     customer: { name, phone, business: sanitize(customer.business, 150), address: sanitize(customer.address, 300), city: sanitize(customer.city, 100), pincode: sanitize(customer.pincode, 10) },
     items: lineItems,
     itemCount: lineItems.reduce((s, i) => s + i.qty, 0),
-    total,
+    total: finalTotal,
+    discountAmount,
+    couponCode: appliedCoupon,
     notes: sanitize(notes, 500),
     userId: req.user?.userId || null,
     createdAt: new Date().toISOString(),
@@ -556,6 +582,8 @@ app.post('/api/products', ...can('products:write'), (req, res) => {
     keyword: sanitize(b.keyword, 100) || 'food',
     description: sanitize(b.description, 1000) || `Premium quality ${name}.`,
     reviewsList: [],
+    tags: Array.isArray(b.tags) ? b.tags.map((t) => sanitize(t, 50).toLowerCase()).filter(Boolean).slice(0, 20) : [],
+    discount: Math.min(99, Math.max(0, Number(b.discount) || 0)),
   };
   db.products.unshift(product);
   write(db);
@@ -582,6 +610,8 @@ app.put('/api/products/:id', ...can('products:write'), (req, res) => {
     rating:      b.rating      !== undefined ? Number(b.rating)             : cur.rating,
     reviews:     b.reviews     !== undefined ? Number(b.reviews)            : cur.reviews,
     inStock:     b.inStock     !== undefined ? Boolean(b.inStock)           : cur.inStock,
+    tags:        b.tags        !== undefined ? (Array.isArray(b.tags) ? b.tags.map((t) => sanitize(t, 50).toLowerCase()).filter(Boolean).slice(0, 20) : (cur.tags || [])) : (cur.tags || []),
+    discount:    b.discount    !== undefined ? Math.min(99, Math.max(0, Number(b.discount) || 0)) : (cur.discount || 0),
     id: cur.id,
     reviewsList: cur.reviewsList || [],
   };
@@ -596,6 +626,21 @@ app.delete('/api/products/:id', ...can('products:delete'), (req, res) => {
   if (db.products.length === before) return res.status(404).json({ error: 'Not found' });
   write(db);
   res.json({ ok: true });
+});
+
+app.put('/api/admin/products/bulk-discount', ...can('products:write'), (req, res) => {
+  const { discount, mode, categoryId } = req.body || {};
+  const pct = Math.min(99, Math.max(0, Number(discount) || 0));
+  const db = read();
+  let targets = db.products;
+  if (categoryId) targets = targets.filter((p) => p.category === categoryId);
+  targets.forEach((p) => {
+    if (mode === 'add') p.discount = Math.min(99, (p.discount || 0) + pct);
+    else if (mode === 'clear') p.discount = 0;
+    else p.discount = pct; // 'set'
+  });
+  write(db);
+  res.json({ ok: true, updated: targets.length });
 });
 
 // ============================================================
@@ -764,8 +809,111 @@ app.put('/api/admin/settings', ...can('settings:manage'), (req, res) => {
   if (contact)  db.settings.contact = { phone: sanitize(contact.phone, 50), email: sanitize(contact.email, 200), address: sanitize(contact.address, 300) };
   if (social)   db.settings.social  = { facebook: sanitize(social.facebook, 300), instagram: sanitize(social.instagram, 300), linkedin: sanitize(social.linkedin, 300), twitter: sanitize(social.twitter, 300) };
   if (legal)    db.settings.legal   = { privacyUrl: sanitize(legal.privacyUrl, 300), termsUrl: sanitize(legal.termsUrl, 300) };
+  if (req.body.whatsappVisible !== undefined) db.settings.whatsappVisible = Boolean(req.body.whatsappVisible);
+  if (req.body.socialVisible) {
+    db.settings.socialVisible = {
+      facebook: Boolean(req.body.socialVisible.facebook ?? db.settings.socialVisible?.facebook ?? true),
+      instagram: Boolean(req.body.socialVisible.instagram ?? db.settings.socialVisible?.instagram ?? true),
+      linkedin: Boolean(req.body.socialVisible.linkedin ?? db.settings.socialVisible?.linkedin ?? true),
+      twitter: Boolean(req.body.socialVisible.twitter ?? db.settings.socialVisible?.twitter ?? true),
+    };
+  }
   write(db);
   res.json(db.settings);
+});
+
+// ============================================================
+// ADMIN: COUPONS
+// ============================================================
+app.get('/api/admin/coupons', ...can('coupons:read'), (_req, res) => {
+  res.json(read().coupons || []);
+});
+
+app.post('/api/admin/coupons', ...can('coupons:write'), (req, res) => {
+  const b = req.body || {};
+  const code = sanitize(b.code, 30).toUpperCase().replace(/\s/g, '');
+  if (!code) return res.status(400).json({ error: 'Code is required' });
+  if (!/^[A-Z0-9_-]{2,30}$/.test(code)) return res.status(400).json({ error: 'Code must be 2-30 alphanumeric characters' });
+  const type = b.type === 'flat' ? 'flat' : 'percent';
+  const value = Math.max(0, Number(b.value) || 0);
+  if (type === 'percent' && value > 100) return res.status(400).json({ error: 'Percent discount cannot exceed 100' });
+  const db = read();
+  if ((db.coupons || []).find((c) => c.code === code)) return res.status(409).json({ error: 'Coupon code already exists' });
+  const coupon = {
+    id: crypto.randomUUID(),
+    code, type, value,
+    minOrder: Math.max(0, Number(b.minOrder) || 0),
+    maxUses: b.maxUses ? Math.max(1, Number(b.maxUses)) : null,
+    usedCount: 0,
+    expiresAt: b.expiresAt || null,
+    active: b.active !== false,
+    scope: ['categories', 'products'].includes(b.scope) ? b.scope : 'all',
+    categoryIds: Array.isArray(b.categoryIds) ? b.categoryIds.slice(0, 50) : [],
+    productIds: Array.isArray(b.productIds) ? b.productIds.slice(0, 200) : [],
+    createdAt: new Date().toISOString(),
+  };
+  db.coupons = [...(db.coupons || []), coupon];
+  write(db);
+  res.status(201).json(coupon);
+});
+
+app.put('/api/admin/coupons/:id', ...can('coupons:write'), (req, res) => {
+  const db = read();
+  const coupon = (db.coupons || []).find((c) => c.id === req.params.id);
+  if (!coupon) return res.status(404).json({ error: 'Not found' });
+  const b = req.body || {};
+  if (b.type !== undefined) coupon.type = b.type === 'flat' ? 'flat' : 'percent';
+  if (b.value !== undefined) coupon.value = Math.max(0, Number(b.value) || 0);
+  if (b.minOrder !== undefined) coupon.minOrder = Math.max(0, Number(b.minOrder) || 0);
+  if (b.maxUses !== undefined) coupon.maxUses = b.maxUses ? Math.max(1, Number(b.maxUses)) : null;
+  if (b.expiresAt !== undefined) coupon.expiresAt = b.expiresAt || null;
+  if (b.active !== undefined) coupon.active = Boolean(b.active);
+  if (b.scope !== undefined) coupon.scope = ['categories', 'products'].includes(b.scope) ? b.scope : 'all';
+  if (Array.isArray(b.categoryIds)) coupon.categoryIds = b.categoryIds.slice(0, 50);
+  if (Array.isArray(b.productIds)) coupon.productIds = b.productIds.slice(0, 200);
+  write(db);
+  res.json(coupon);
+});
+
+app.delete('/api/admin/coupons/:id', ...can('coupons:delete'), (req, res) => {
+  const db = read();
+  const before = (db.coupons || []).length;
+  db.coupons = (db.coupons || []).filter((c) => c.id !== req.params.id);
+  if (db.coupons.length === before) return res.status(404).json({ error: 'Not found' });
+  write(db);
+  res.json({ ok: true });
+});
+
+// Public coupon validation
+app.post('/api/coupons/validate', limiter, (req, res) => {
+  const code = sanitize(req.body?.code, 30).toUpperCase().trim();
+  const cartTotal = Number(req.body?.cartTotal) || 0;
+  const cartProductIds = Array.isArray(req.body?.productIds) ? req.body.productIds : [];
+  const cartCategoryIds = Array.isArray(req.body?.categoryIds) ? req.body.categoryIds : [];
+  if (!code) return res.status(400).json({ error: 'Code is required' });
+
+  const db = read();
+  const coupon = (db.coupons || []).find((c) => c.code === code);
+  if (!coupon || !coupon.active) return res.status(404).json({ error: 'Invalid or expired coupon code' });
+  if (coupon.expiresAt && new Date(coupon.expiresAt) < new Date()) return res.status(400).json({ error: 'This coupon has expired' });
+  if (coupon.maxUses !== null && coupon.usedCount >= coupon.maxUses) return res.status(400).json({ error: 'This coupon has reached its usage limit' });
+  if (cartTotal < coupon.minOrder) return res.status(400).json({ error: `Minimum order of ₹${coupon.minOrder} required for this coupon` });
+
+  // Scope check
+  if (coupon.scope === 'products' && coupon.productIds.length > 0) {
+    if (!cartProductIds.some((id) => coupon.productIds.includes(id)))
+      return res.status(400).json({ error: 'This coupon is not applicable to any item in your cart' });
+  }
+  if (coupon.scope === 'categories' && coupon.categoryIds.length > 0) {
+    if (!cartCategoryIds.some((id) => coupon.categoryIds.includes(id)))
+      return res.status(400).json({ error: 'This coupon is not applicable to any category in your cart' });
+  }
+
+  const discount = coupon.type === 'percent'
+    ? Math.round(cartTotal * coupon.value / 100)
+    : Math.min(coupon.value, cartTotal);
+
+  res.json({ valid: true, coupon: { id: coupon.id, code: coupon.code, type: coupon.type, value: coupon.value }, discount, finalTotal: cartTotal - discount });
 });
 
 app.post('/api/admin/reset', ...can('settings:manage'), (_req, res) => res.json({ ok: true, db: reset() }));

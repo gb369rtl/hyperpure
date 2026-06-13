@@ -94,4 +94,15 @@ export const api = {
   createCategory: (body) => request('/categories', { method: 'POST', body, authed: true }),
   updateCategory: (id, body) => request(`/categories/${id}`, { method: 'PUT', body, authed: true }),
   deleteCategory: (id) => request(`/categories/${id}`, { method: 'DELETE', authed: true }),
+  // tags
+  getTags: () => request('/tags'),
+  // coupons (public)
+  validateCoupon: (body) => request('/coupons/validate', { method: 'POST', body }),
+  // coupons (admin)
+  getCoupons: () => request('/admin/coupons', { authed: true }),
+  createCoupon: (body) => request('/admin/coupons', { method: 'POST', body, authed: true }),
+  updateCoupon: (id, body) => request(`/admin/coupons/${id}`, { method: 'PUT', body, authed: true }),
+  deleteCoupon: (id) => request(`/admin/coupons/${id}`, { method: 'DELETE', authed: true }),
+  // bulk discount
+  bulkDiscount: (body) => request('/admin/products/bulk-discount', { method: 'PUT', body, authed: true }),
 };

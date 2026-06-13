@@ -26,6 +26,8 @@ const p = (name, category, unit, price, mrp, rating, reviews, keyword, badge = '
     keyword,
     description: `Premium quality ${name.toLowerCase()} sourced from trusted farms and brands, quality-checked and delivered fresh to your business.`,
     reviewsList: [],
+    tags: [],
+    discount: 0,
   };
 };
 
@@ -223,6 +225,7 @@ export const ALL_PERMISSIONS = [
   'users:read',      'users:write',      'users:delete',
   'roles:read',      'roles:write',      'roles:delete',
   'settings:manage',
+  'coupons:read',    'coupons:write',    'coupons:delete',
 ];
 
 export const defaultRoles = [
@@ -282,5 +285,6 @@ export function seed() {
     orders: [],
     users: [],
     roles: defaultRoles,
+    coupons: [],
   };
 }

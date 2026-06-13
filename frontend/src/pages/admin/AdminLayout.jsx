@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, Link } from 'react-router-dom';
 import {
   LayoutDashboard, Package, ShoppingBag, Inbox, Layers,
-  LayoutTemplate, LogOut, ExternalLink, Star, Users, Shield, Settings,
+  LayoutTemplate, LogOut, ExternalLink, Star, Users, Shield, Settings, Tag,
 } from 'lucide-react';
 import { api } from '../../lib/api.js';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -20,6 +20,7 @@ const ALL_NAV = [
   { to: '/admin/users',      label: 'Users',     icon: Users,                       perm: 'users:read' },
   { to: '/admin/roles',      label: 'Roles',     icon: Shield,                      perm: 'roles:read' },
   { to: '/admin/settings',   label: 'Settings',  icon: Settings,                    perm: 'settings:manage' },
+  { to: '/admin/coupons',   label: 'Coupons',   icon: Tag,                          perm: 'coupons:read' },
 ];
 
 export default function AdminLayout() {

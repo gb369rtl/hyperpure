@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Pencil, Trash2, Search, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, X, Tag } from 'lucide-react';
 import { api } from '../../lib/api.js';
 import { inr } from '../../lib/constants.js';
 import Pagination from '../../components/Pagination.jsx';
@@ -8,9 +8,104 @@ import Pagination from '../../components/Pagination.jsx';
 const empty = {
   name: '', category: '', unit: '', price: '', mrp: '', rating: 4.5,
   reviews: 0, badge: '', keyword: '', image: '', description: '', inStock: true,
+  tags: [], discount: 0,
 };
 
-function ProductForm({ product, categories, onClose, onSaved }) {
+function TagInput({ tags = [], allTags = [], onChange }) {
+  const [input, setInput] = useState('');
+  const suggestions = allTags.filter((t) => !tags.includes(t) && t.includes(input.toLowerCase())).slice(0, 6);
+
+  const add = (tag) => {
+    const t = tag.trim().toLowerCase();
+    if (t && !tags.includes(t)) onChange([...tags, t]);
+    setInput('');
+  };
+
+  const handleKey = (e) => {
+    if ((e.key === 'Enter' || e.key === ',') && input.trim()) { e.preventDefault(); add(input); }
+    if (e.key === 'Backspace' && !input && tags.length) onChange(tags.slice(0, -1));
+  };
+
+  return (
+    <div>
+      <div className="flex flex-wrap gap-1.5 rounded-xl border border-ink/10 bg-white px-2.5 py-2 dark:border-cream/15 dark:bg-ink-700 focus-within:border-lime-500">
+        {tags.map((t) => (
+          <span key={t} className="flex items-center gap-1 rounded-full bg-lime-100 px-2.5 py-0.5 text-xs font-semibold text-lime-800 dark:bg-lime-500/15 dark:text-lime-400">
+            {t}
+            <button type="button" onClick={() => onChange(tags.filter((x) => x !== t))} className="leading-none hover:text-red-500">&times;</button>
+          </span>
+        ))}
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value.toLowerCase())}
+          onKeyDown={handleKey}
+          placeholder={tags.length ? '' : 'Type tag, press Enter…'}
+          className="min-w-[120px] flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink/40 dark:text-cream"
+        />
+      </div>
+      {input && suggestions.length > 0 && (
+        <div className="mt-1 flex flex-wrap gap-1">
+          {suggestions.map((t) => (
+            <button key={t} type="button" onClick={() => add(t)} className="rounded-full border border-ink/15 px-2.5 py-0.5 text-xs hover:bg-ink/5 dark:border-cream/15 dark:hover:bg-cream/5">{t}</button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BulkDiscountModal({ categories, onSave, onCancel }) {
+  const [discount, setDiscount] = useState('');
+  const [mode, setMode] = useState('set');
+  const [categoryId, setCategoryId] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setSaving(true); setError('');
+    try {
+      await onSave({ discount: Number(discount), mode, categoryId: categoryId || undefined });
+    } catch (err) {
+      setError(err.message); setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-ink-800">
+        <h2 className="font-display text-xl font-extrabold">Bulk Discount</h2>
+        <form onSubmit={submit} className="mt-4 space-y-4">
+          <label className="block text-sm"><span className="font-semibold">Apply to</span>
+            <select className="field mt-1" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+              <option value="">All Products</option>
+              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </label>
+          <label className="block text-sm"><span className="font-semibold">Mode</span>
+            <select className="field mt-1" value={mode} onChange={(e) => setMode(e.target.value)}>
+              <option value="set">Set exact discount</option>
+              <option value="add">Add to existing discount</option>
+              <option value="clear">Clear all discounts (set to 0)</option>
+            </select>
+          </label>
+          {mode !== 'clear' && (
+            <label className="block text-sm"><span className="font-semibold">Discount %</span>
+              <input type="number" min="0" max="99" required className="field mt-1 nums" value={discount} onChange={(e) => setDiscount(e.target.value)} placeholder="10" />
+            </label>
+          )}
+          {error && <p className="text-sm text-red-500">{error}</p>}
+          <div className="flex gap-3">
+            <button type="submit" disabled={saving} className="btn-primary disabled:opacity-60">{saving ? 'Applying…' : 'Apply'}</button>
+            <button type="button" onClick={onCancel} className="btn-outline">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function ProductForm({ product, categories, allTags, onClose, onSaved }) {
   const [form, setForm] = useState(product ? { ...empty, ...product } : { ...empty, category: categories[0]?.id || '' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -67,9 +162,21 @@ function ProductForm({ product, categories, onClose, onSaved }) {
             <input value={form.image} onChange={set('image')} placeholder="https://…" className="field mt-1" /></label>
           <label className="col-span-2 text-sm"><span className="font-semibold">Description</span>
             <textarea value={form.description} onChange={set('description')} rows={2} className="field mt-1" /></label>
+          <label className="text-sm"><span className="font-semibold">Discount (%)</span>
+            <input type="number" min="0" max="99" value={form.discount || 0} onChange={set('discount')} className="field mt-1 nums" /></label>
           <label className="col-span-2 flex items-center gap-2 text-sm">
             <input type="checkbox" checked={form.inStock} onChange={set('inStock')} className="h-4 w-4 accent-brand-600" />
             <span className="font-semibold">In stock</span></label>
+          <div className="col-span-2 text-sm">
+            <span className="font-semibold">Tags</span>
+            <div className="mt-1">
+              <TagInput
+                tags={form.tags || []}
+                allTags={allTags || []}
+                onChange={(tags) => setForm({ ...form, tags })}
+              />
+            </div>
+          </div>
         </div>
 
         {error && <p className="mt-3 text-sm text-red-500">{error}</p>}
@@ -87,16 +194,19 @@ export default function AdminProducts() {
   const navigate = useNavigate();
   const [data, setData] = useState({ items: [], total: 0, pages: 1 });
   const [categories, setCategories] = useState([]);
+  const [allTags, setAllTags] = useState([]);
   const [search, setSearch] = useState('');
   const [term, setTerm] = useState('');
   const [category, setCategory] = useState('all');
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState(null);
+  const [bulkModal, setBulkModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => {
     api.getCategories().then(setCategories).catch(() => {});
+    api.getTags().then(setAllTags).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -111,6 +221,7 @@ export default function AdminProducts() {
       .then(setData)
       .catch((e) => { if (e.status === 401) navigate('/login'); })
       .finally(() => setLoading(false));
+    api.getTags().then(setAllTags).catch(() => {});
   };
 
   useEffect(load, [page, search, category]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -134,7 +245,10 @@ export default function AdminProducts() {
           <h1 className="font-display text-2xl font-extrabold">Products</h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 nums">{data.total} products in catalogue</p>
         </div>
-        <button onClick={() => setEditing('new')} className="btn-primary"><Plus size={16} /> Add Product</button>
+        <div className="flex gap-2">
+          <button onClick={() => setBulkModal(true)} className="btn-outline"><Tag size={16} /> Bulk Discount</button>
+          <button onClick={() => setEditing('new')} className="btn-primary"><Plus size={16} /> Add Product</button>
+        </div>
       </div>
 
       {deleteError && <p className="mt-4 rounded-xl bg-red-50 px-4 py-2 text-sm text-red-600 dark:bg-red-500/10 dark:text-red-400">{deleteError}</p>}
@@ -208,8 +322,21 @@ export default function AdminProducts() {
         <ProductForm
           product={editing === 'new' ? null : editing}
           categories={categories}
+          allTags={allTags}
           onClose={() => setEditing(null)}
           onSaved={() => { setEditing(null); load(); }}
+        />
+      )}
+
+      {bulkModal && (
+        <BulkDiscountModal
+          categories={categories}
+          onSave={async (body) => {
+            await api.bulkDiscount(body);
+            setBulkModal(false);
+            load();
+          }}
+          onCancel={() => setBulkModal(false)}
         />
       )}
     </div>
